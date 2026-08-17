@@ -1,6 +1,6 @@
 // config.js - Single place for API base URL. All fetch("/api/...") calls use this automatically.
 const CONFIG = {
-    API_BASE_URL: "http://13.204.199.132:5000", // EC2 Production IP
+    API_BASE_URL: "", 
 };
 
 // Reusable function to build full URLs (optional)
