@@ -1,6 +1,6 @@
 // config.js - Single place for API base URL. All fetch("/api/...") calls use this automatically.
 const CONFIG = {
-    API_BASE_URL: "http://localhost:5000", // Change this to your backend URL (e.g. Webuzo IP) when deploying
+    API_BASE_URL: "http://13.204.199.132:5000", // EC2 Production IP
 };
 
 // Reusable function to build full URLs (optional)
