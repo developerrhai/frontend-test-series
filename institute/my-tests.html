@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Tests | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        .dashboard-wrapper {
+            padding: 40px 0 120px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* --- Subscription Bar --- */
+        #subscriptionInfo {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--silver);
+            margin-bottom: 35px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Individual Elite Cards --- */
+        .test-individual-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .test-individual-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-blue);
+        }
+
+        .test-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 12px;
+        }
+
+        .meta-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--electric-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            background: #f0f7ff;
+            padding: 5px 12px;
+            border-radius: 6px;
+            margin-right: 12px;
+        }
+
+        .test-details {
+            font-family: var(--font-display);
+            font-size: 14px;
+            color: var(--silver);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* --- Tactical Button Grid --- */
+        .btn-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 25px;
+        }
+
+        .btn-elite {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple));
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+        }
+
+        .btn-bank {
+            background: #fffbeb;
+            color: #b45309;
+            border-color: #fde68a;
+        }
+        .btn-bank:hover { background: #b45309; color: #fff; }
+
+        .btn-edit { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+        .btn-edit:hover { background: #4338ca; color: #fff; }
+
+        .btn-view { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+        .btn-view:hover { background: #059669; color: #fff; }
+
+        .btn-analytics { background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; }
+        .btn-analytics:hover { background: #7c3aed; color: #fff; }
+
+        .btn-danger { background: #fff1f2; color: #e11d48; border-color: #fecaca; }
+        .btn-danger:hover { background: #e11d48; color: #fff; }
+
+        /* PDF Button Theme */
+        .btn-pdf { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
+        .btn-pdf:hover { background: #0369a1; color: #fff; }
+
+        .btn-elite:hover { transform: translateY(-3px); }
+
+        @media (max-width: 768px) {
+            .btn-elite { width: 100%; justify-content: center; padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="header-container"></div>
+
+<main class="dashboard-wrapper">
+    <div id="subscriptionInfo">
+        <i class="fas fa-sync-alt fa-spin"></i> Initializing Secure Uplink...
+    </div>
+
+    <section id="testList">
+        <div style="text-align: center; padding: 100px;">
+            <p style="font-family: var(--font-mono); color: var(--silver);">Syncing Neural Repository...</p>
+        </div>
+    </section>
+</main>
+
+<div id="footer-container"></div>
+
+<script src="layout.js"></script>
+
+<script>
+/* ================= SYSTEM CORE ================= */
+// BASE_URL is empty if API is on the same domain
+const BASE_URL = ""; 
+const token = localStorage.getItem("token");
+
+async function init() {
+    if (!token) { 
+        console.warn("No token found, redirecting...");
+        location.href = "../login.html"; 
+        return; 
+    }
+    await fetchUserProfile();
+    await renderTests();
+}
+
+async function fetchUserProfile() {
+    try {
+        const res = await fetch(BASE_URL + '/api/auth/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (data.success && data.user.role === 'teacher') {
+            updateSubscriptionUI(data.user);
+        } else { 
+            console.error("Access Denied: Not a teacher role.", data);
+            logout(); 
+        }
+    } catch (err) { 
+        console.error("Profile Fetch Failed.", err);
+        logout(); 
+    }
+}
+
+function updateSubscriptionUI(user) {
+    const info = document.getElementById("subscriptionInfo");
+    const expiry = user.expiry_date ? new Date(user.expiry_date) : null;
+    const now = new Date();
+
+    if (!expiry || now > expiry || user.plan === 'Free') {
+        info.innerHTML = `<span style="color:#ef4444; font-weight:800;"><i class="fas fa-lock"></i> SYSTEM ACCESS RESTRICTED: SUBSCRIPTION EXPIRED</span>`;
+    } else {
+        const days = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+        info.innerHTML = `<i class="fas fa-shield-alt" style="color:var(--electric-blue)"></i> <b>${user.plan}</b> PROTOCOL ACTIVE | <b>${days} DAYS REMAINING</b>`;
+    }
+}
+
+/* ================= RENDER MODULES ================= */
+async function renderTests() {
+    const listDiv = document.getElementById("testList");
+    try {
+        const res = await fetch(BASE_URL + '/api/teacher/my-tests', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+
+        let html = `<h2 style="color:#1e3a8a; margin-bottom:35px; font-weight:800;">Examination Management Repository</h2>`;
+        
+        if (data.tests.length === 0) {
+            html += `
+            <div class="test-individual-card" style="text-align:center; padding: 60px;">
+                <i class="fas fa-clipboard-list fa-3x" style="color: #cbd5e1; margin-bottom: 20px;"></i>
+                <p style="color: var(--silver); font-family: var(--font-mono);">No active modules detected.</p>
+            </div>`;
+        } else {
+            data.tests.forEach(test => {
+                html += `
+                <div class="test-individual-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 class="test-title">${test.title}</h3>
+                            <div class="test-details">
+                                <span class="meta-tag">${test.series}</span>
+                                <span><i class="far fa-clock"></i> <b>LIMIT:</b> ${test.duration} MINS</span>
+                                <span style="color: #cbd5e1;">|</span>
+                                <span><i class="fas fa-microscope"></i> <b>PROTOCOL:</b> ${test.subject_type || 'Mixed'}</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--silver);">
+                            STAMP: ${new Date(test.created_at).toLocaleDateString()}
+                        </div>
+                    </div>
+
+                    <div class="btn-grid">
+                        <a href="add-question.html?id=${test.id}" class="btn-elite btn-add">
+                            <i class="fas fa-plus-circle"></i> Add Q
+                        </a>
+
+                        <button class="btn-elite btn-pdf" onclick="downloadPDF('${test.id}', '${test.title.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </button>
+
+                        <a href="bank-explorer.html?examId=${test.id}" class="btn-elite btn-bank">
+                            <i class="fas fa-database"></i> Bank
+                        </a>
+
+                        <button class="btn-elite btn-edit" onclick="location.href='create-test.html?edit=true&id=${test.id}'">
+                            <i class="fas fa-cog"></i> Edit
+                        </button>
+                        <a href="view-questions.html?id=${test.id}" class="btn-elite btn-view">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="student-results.html?examId=${test.id}" class="btn-elite btn-analytics">
+                            <i class="fas fa-chart-pie"></i> Analytics
+                        </a>
+                        <button class="btn-elite btn-danger" onclick="deleteTest('${test.id}')">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </div>
+                </div>`;
+            });
+        }
+        listDiv.innerHTML = html;
+    } catch (err) {
+        listDiv.innerHTML = `<div class="test-individual-card" style="border-left: 6px solid #ef4444;"><p style="color:red;">Uplink Fault: ${err.message}</p></div>`;
+    }
+}
+
+/* ================= PDF GENERATION (STANDALONE LOGIC) ================= */
+async function downloadPDF(examId, title) {
+    const btn = event.currentTarget;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(BASE_URL + `/api/teacher/test-questions/${examId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (!data.success || !data.questions.length) {
+            alert("No questions found for this test.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // --- Header ---
+        doc.setFontSize(20);
+        doc.setTextColor(30, 58, 138);
+        doc.text(title.toUpperCase(), 105, 15, { align: 'center' });
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text("GENERATED VIA TESTSERIES ELITE | SECURE EXAMINATION MODULE", 105, 22, { align: 'center' });
+        doc.line(20, 25, 190, 25);
+
+        // --- Prepare Content ---
+        const body = data.questions.map((q, i) => {
+            const optionsText = `(A) ${q.option_a}    (B) ${q.option_b}\n(C) ${q.option_c}    (D) ${q.option_d}`;
+            
+            return {
+                index: i + 1,
+                content: q.question_text,
+                options: optionsText,
+                image: q.image_url // Base64 string from API
+            };
+        });
+
+   doc.autoTable({
+    startY: 30,
+    head: [['#', 'INTELLIGENCE UNIT (QUESTION & OPTIONS)']],
+    body: body,
+    columns: [
+        { header: '#', dataKey: 'index' },
+        { header: 'INTELLIGENCE UNIT', dataKey: 'content' }
+    ],
+    theme: 'grid',
+    headStyles: { fillColor: [0, 102, 255], textColor: 255 },
+    styles: { font: 'helvetica', lineHeight: 1.2, cellPadding: 5 },
+    columnStyles: { 0: { cellWidth: 12, halign: 'center' } },
+    
+    didDrawCell: (data) => {
+        if (data.section === 'body' && data.column.dataKey === 'content') {
+            const rowData = data.row.raw;
+            
+            // 1. Start drawing below the Question Text
+            // We use a safety margin to ensure no overlap with the question text
+            let currentY = data.cell.y + 12; 
+
+            // 2. If image exists, draw it and move the Y pointer down
+            if (rowData.image && rowData.image.startsWith('data:image')) {
+                try {
+                    doc.addImage(rowData.image, 'PNG', data.cell.x + 5, currentY, 45, 30);
+                    currentY += 38; // Add space after the image for options
+                } catch (e) {
+                    console.error("Image render failed", e);
+                }
+            } else {
+                // If no image, add a small gap after the question text
+                currentY += 5; 
+            }
+
+            // 3. Draw Options with extra breathing room
+            doc.setFontSize(10);
+            doc.setTextColor(60, 60, 60);
+            doc.text(rowData.options, data.cell.x + 5, currentY);
+        }
+    },
+
+    didParseCell: (data) => {
+        if (data.section === 'body' && data.column.dataKey === 'content') {
+            const rowData = data.row.raw;
+            
+            // Adjust the total cell height to prevent the next row from overlapping
+            if (rowData.image) {
+                // Large height for Question + Image + Options
+                data.cell.styles.minCellHeight = 75; 
+            } else {
+                // Standard height for Question + Options
+                data.cell.styles.minCellHeight = 35;
+            }
+        }
+    }
+});
+        // --- Answer Key Page ---
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text("OFFICIAL ANSWER KEY", 105, 20, { align: 'center' });
+        
+        const keyRows = [];
+        for (let i = 0; i < data.questions.length; i += 5) {
+            const chunk = data.questions.slice(i, i + 5);
+            keyRows.push(chunk.map((q, index) => `Q${i + index + 1}: ${q.correct_option}`));
+        }
+        
+        doc.autoTable({ 
+            startY: 30, 
+            body: keyRows, 
+            theme: 'plain', 
+            styles: { fontSize: 12, fontStyle: 'bold' } 
+        });
+
+        doc.save(`${title.replace(/\s+/g, '_')}_Paper.pdf`);
+
+    } catch (err) {
+        console.error(err);
+        alert("Neural uplink failed. Check console for details.");
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    }
+}
+
+
+/* ================= DELETE PROTOCOL ================= */
+async function deleteTest(id) {
+    if (!confirm("CRITICAL WARNING: This will erase all questions and results. Confirm?")) return;
+    try {
+        const res = await fetch(BASE_URL + `/api/teacher/delete-test/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) renderTests();
+    } catch (err) { alert("Neural transmission error."); }
+}
+
+function logout() { 
+    localStorage.clear(); 
+    location.href = "../login.html"; 
+}
+
+init();
+</script>
+</body>
+</html>

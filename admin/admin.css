@@ -1,0 +1,88 @@
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f6fb;
+}
+
+/* HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#2a5298;
+  padding:15px 40px;
+  color:#fff;
+}
+.header .logo{
+  font-size:24px;
+  font-weight:bold;
+}
+.header nav a{
+  color:#fff;
+  text-decoration:none;
+  margin-left:20px;
+  font-weight:500;
+}
+.header nav a.active{
+  text-decoration:underline;
+}
+
+/* PAGE */
+.container{
+  max-width:900px;
+  margin:40px auto;
+}
+
+h1{
+  color:#1e40af;
+  margin-bottom:25px;
+}
+
+/* CARD */
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:22px;
+  margin-bottom:25px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* TEST CARD */
+.test-title{
+  font-size:20px;
+  font-weight:bold;
+  color:#2563eb;
+}
+.meta{
+  margin-top:8px;
+  color:#374151;
+}
+
+.badges{
+  margin:12px 0;
+}
+.badge{
+  display:inline-block;
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:13px;
+  color:#fff;
+}
+.green{background:#16a34a}
+.red{background:#dc2626}
+
+/* BUTTONS */
+.actions button{
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  margin:6px 6px 0 0;
+  cursor:pointer;
+}
+.blue{background:#2563eb;color:#fff}
+.red-btn{background:#dc2626;color:#fff}
+.outline{
+  background:#eff6ff;
+  color:#2563eb;
+  border:1px solid #93c5fd;
+}

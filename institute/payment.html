@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment | TestSeries</title>
+    <style>
+        body{ margin:0; font-family:'Segoe UI', Arial, sans-serif; background:#f4f6fb; }
+        .container{ max-width:500px; margin:60px auto; background:#fff; padding:40px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1); }
+        .details { background:#f8fafc; padding:20px; border-radius:8px; margin:20px 0; border: 1px solid #e2e8f0; }
+        .details p { display: flex; justify-content: space-between; margin: 10px 0; color: #475569; }
+        .total-row { border-top: 2px solid #cbd5e1; padding-top: 15px; margin-top: 15px; font-weight: bold; font-size: 20px; color: #1e40af !important; }
+        button { width:100%; padding:15px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:18px; cursor:pointer; font-weight:bold; transition: 0.3s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background:#94a3b8; cursor:not-allowed; }
+        .loader { display:none; text-align:center; margin-top:15px; color:#2563eb; font-weight:bold; }
+        .note { text-align:center; font-size:13px; margin-top:15px; color:#64748b; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align:center; margin-top: 0;">Confirm Your Payment</h2>
+    <div class="details" id="planDisplay">Loading plan details...</div>
+    <button id="payBtn">Pay Now</button>
+    <div id="loader" class="loader">Processing upgrade...</div>
+    <p class="note">Secure SSL Encrypted Transaction</p>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+    const planRaw = localStorage.getItem("selectedPlan");
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+
+    if (!token || !planRaw) {
+        alert("Session expired or no plan selected.");
+        location.href = "subscription.html";
+    }
+
+    const selected = JSON.parse(planRaw);
+    
+    // UI Calculation
+    const amount = parseFloat(selected.amount) || 0;
+    const duration = selected.duration || "30 Days"; // Fallback to 30 days
+    const tax = (amount * 0.18).toFixed(2);
+    const total = (amount * 1.18).toFixed(2);
+
+    document.getElementById("planDisplay").innerHTML = `
+        <p><span>Selected Plan:</span> <b>${selected.plan || selected.name}</b></p>
+        <p><span>Duration:</span> <b>${duration}</b></p>
+        <p><span>Base Amount:</span> <b>₹${amount}</b></p>
+        <p><span>GST (18%):</span> <b>₹${tax}</b></p>
+        <div class="total-row"><span>Total Payable:</span> <span>₹${total}</span></div>
+    `;
+
+    document.getElementById("payBtn").innerText = `Pay Now & Start ${duration}`;
+
+    document.getElementById("payBtn").onclick = async function() {
+        this.disabled = true;
+        document.getElementById("loader").style.display = "block";
+
+        const transactionId = "TXN-" + Date.now();
+
+        try {
+            const res = await fetch('/api/payment/upgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    planName: selected.plan || selected.name,
+                    amount: total,
+                    transactionId: transactionId,
+                    durationDays: duration.includes("Year") ? 365 : 30 // Logic to handle days
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                // 1. Prepare Invoice Data exactly like the Student side
+                const invoiceData = {
+                    invoiceNo: "INV-T-" + Math.floor(1000 + Math.random() * 9000),
+                    paymentId: transactionId,
+                    plan: selected.plan || selected.name,
+                    amount: amount.toFixed(2),
+                    gst: tax,
+                    total: total,
+                    date: new Date().toLocaleDateString()
+                };
+                localStorage.setItem("latestInvoice", JSON.stringify(invoiceData));
+
+                // 2. Update local session
+                currentUser.plan = selected.plan || selected.name;
+                currentUser.expiry_date = data.expiry_date;
+                localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+                alert("Payment Successful! Your teacher account has been upgraded.");
+                
+                // 3. Redirect to Invoice (consistent with student flow)
+                location.href = "invoice.html";
+            } else {
+                alert("Error: " + data.message);
+                this.disabled = false;
+            }
+        } catch (err) {
+            alert("Connection error. Ensure backend is running.");
+            this.disabled = false;
+        } finally {
+            document.getElementById("loader").style.display = "none";
+        }
+    };
+</script>
+</body>
+</html>

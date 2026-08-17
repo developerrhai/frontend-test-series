@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Intelligence Bank | Add Question</title>
+
+    <style>
+        :root {
+            --primary: #4b7bec;
+            --primary-dark: #3867d6;
+            --bg: #f4f6fb;
+            --border: #d1d5db;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #4b5563;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        select, input, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0 15px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            background: #fff;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .preview {
+            max-width: 100%;
+            height: auto;
+            display: none;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        #explanation {
+            border-left: 4px solid #facc15;
+            background: #fffef2;
+            height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">Admin: Global Intelligence Bank</div>
+
+    <div class="container">
+        <div class="form-row">
+            <div>
+                <label>Select Subject Vector</label>
+                <select id="subject">
+                    <option>Physics</option>
+                    <option>Chemistry</option>
+                    <option>Maths</option>
+                    <option>Biology</option>
+                </select>
+            </div>
+            <div>
+                <label>Intelligence Mode</label>
+                <select id="qType" onchange="toggleMode()">
+                    <option value="single">Single Correct (MCQ)</option>
+                    <option value="multiple">Multiple Correct (MSQ)</option>
+                    <option value="numerical">Numerical / NAT</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Question Intelligence (Text)</label>
+        <textarea id="q" placeholder="Enter question content..."></textarea>
+
+        <label>Upload Diagram (Optional)</label>
+        <input type="file" id="qimg" accept="image/*">
+        <img id="preview" class="preview">
+
+        <div id="optionsWrapper">
+            <label>Options Data</label>
+            <div class="options-grid">
+                <input id="a" placeholder="Option A">
+                <input id="b" placeholder="Option B">
+                <input id="c" placeholder="Option C">
+                <input id="d" placeholder="Option D">
+            </div>
+        </div>
+
+        <label>Correct Answer Key</label>
+        <div id="ansContainer">
+            <select id="ans">
+                <option value="A">Option A</option>
+                <option value="B">Option B</option>
+                <option value="C">Option C</option>
+                <option value="D">Option D</option>
+            </select>
+        </div>
+        <div id="hintText" class="hint">Standard MCQ mode.</div>
+
+        <label style="color: #ca8a04;">Solution Logic / Explanation</label>
+        <textarea id="explanation" placeholder="Provide step-by-step solution logic..."></textarea>
+
+        <button onclick="save()" id="submitBtn">Deploy to Global Bank</button>
+    </div>
+
+    <script>
+        // --- STANDALONE CONFIG ---
+        const API_BASE_URL = "http://localhost:5000"; // Ensure this matches your backend port
+
+        const token = localStorage.getItem("token");
+        const examId = new URLSearchParams(location.search).get("id");
+        let imageBase64 = null;
+
+        if (!token || !examId) {
+            alert("CRITICAL_ERROR: Session or Exam ID missing.");
+            location.href = "dashboard.html";
+        }
+
+        function toggleMode() {
+            const mode = document.getElementById("qType").value;
+            const optWrapper = document.getElementById("optionsWrapper");
+            const ansContainer = document.getElementById("ansContainer");
+            const hint = document.getElementById("hintText");
+
+            if (mode === 'numerical') {
+                optWrapper.style.display = "none";
+                ansContainer.innerHTML = `<input id="ans" placeholder="e.g. 10.5" required>`;
+                hint.innerText = "NAT MODE: Numeric input required.";
+            } else if (mode === 'multiple') {
+                optWrapper.style.display = "block";
+                ansContainer.innerHTML = `<input id="ans" placeholder="e.g. A,C" style="text-transform: uppercase;" required>`;
+                hint.innerText = "MSQ MODE: Comma-separated keys.";
+            } else {
+                optWrapper.style.display = "block";
+                ansContainer.innerHTML = `
+                    <select id="ans">
+                        <option value="A">Option A</option><option value="B">Option B</option>
+                        <option value="C">Option C</option><option value="D">Option D</option>
+                    </select>`;
+                hint.innerText = "MCQ MODE: Select single solution.";
+            }
+        }
+
+        document.getElementById("qimg").onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = () => {
+                    imageBase64 = reader.result;
+                    document.getElementById("preview").src = imageBase64;
+                    document.getElementById("preview").style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        async function save() {
+            const submitBtn = document.getElementById("submitBtn");
+            const qType = document.getElementById("qType").value;
+
+            const payload = {
+                examId: examId,
+                subject: document.getElementById("subject").value,
+                questionText: (document.getElementById("q").value || "").trim(),
+                optionA: qType === 'numerical' ? "" : (document.getElementById("a")?.value || "").trim(),
+                optionB: qType === 'numerical' ? "" : (document.getElementById("b")?.value || "").trim(),
+                optionC: qType === 'numerical' ? "" : (document.getElementById("c")?.value || "").trim(),
+                optionD: qType === 'numerical' ? "" : (document.getElementById("d")?.value || "").trim(),
+                correctOption: (document.getElementById("ans")?.value || "").toUpperCase().trim(),
+                qType: qType,
+                explanation: (document.getElementById("explanation")?.value || "").trim(),
+                image_base64: imageBase64 || null 
+            };
+
+            if (!payload.questionText || !payload.correctOption) return alert("Validation Error: Missing Question or Key.");
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "SYNCING_DATA...";
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/add-question`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("✅ SUCCESS: Question integrated.");
+                    resetForm();
+                } else {
+                    alert("UPLINK_DENIED: " + result.message);
+                }
+            } catch (err) {
+                alert("CRITICAL_FAILURE: Check if backend is running on " + API_BASE_URL);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Deploy to Global Bank";
+            }
+        }
+
+        function resetForm() {
+            document.getElementById("q").value = "";
+            document.getElementById("explanation").value = "";
+            const optA = document.getElementById("a");
+            if (optA) {
+                optA.value = ""; document.getElementById("b").value = "";
+                document.getElementById("c").value = ""; document.getElementById("d").value = "";
+            }
+            const ansEl = document.getElementById("ans");
+            if (ansEl && ansEl.tagName === "INPUT") ansEl.value = "";
+            document.getElementById("preview").style.display = "none";
+            document.getElementById("qimg").value = "";
+            imageBase64 = null;
+        }
+    </script>
+</body>
+
+</html>

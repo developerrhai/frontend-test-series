@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GST Invoice | TestSeries</title>
+    <style>
+        /* ================= EXACT REPLICA OF STUDENT STYLES ================= */
+        *{ box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body{ margin:0; background:#f4f7fa; color:#1e293b; padding: 20px; }
+        
+        .header{ background:#1e293b; color:#fff; padding:15px 40px; display:flex; justify-content:space-between; align-items:center; border-radius: 8px 8px 0 0; max-width: 850px; margin: auto; }
+        .status.success{ background:#22c55e; padding:6px 12px; border-radius:6px; font-size:13px; font-weight: bold; }
+        
+        .dashboard{ max-width:850px; margin:0 auto 40px auto; }
+        
+        .invoice-card{ background:#fff; padding:40px; border-radius:0 0 8px 8px; box-shadow:0 10px 25px rgba(0,0,0,.05); }
+        .invoice-card h2{ text-align:center; margin-bottom:30px; color:#1e40af; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .invoice-meta{ display:flex; justify-content:space-between; margin-bottom:30px; font-size:14px; line-height: 1.6; }
+        
+        .invoice-table{ width:100%; border-collapse:collapse; margin-top:20px; }
+        .invoice-table th, .invoice-table td{ border:1px solid #e5e7eb; padding:15px; text-align:right; }
+        .invoice-table th:first-child, .invoice-table td:first-child{ text-align:left; }
+        .invoice-table th{ background:#f8fafc; color: #475569; }
+        
+        .total-row td{ font-weight:bold; background:#f1f5f9; font-size: 1.1rem; color: #1e40af; }
+        
+        .actions{ margin-top:30px; display:flex; gap:15px; align-items: center; }
+        button{ padding:12px 20px; border:none; background:#2563eb; color:#fff; border-radius:6px; cursor:pointer; font-weight: bold; }
+        button.secondary{ background:#16a34a; }
+        .actions a{ text-decoration:none; font-weight:bold; color:#2563eb; margin-left: auto; }
+        
+        @media print{ 
+            .header, .actions { display:none !important; } 
+            body { background: #fff; padding: 0; } 
+            .invoice-card { box-shadow: none; border: 1px solid #eee; } 
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div style="font-size: 1.3rem; font-weight: bold;">TestSeries Teacher Portal</div>
+    <div class="status success">Payment Successful</div>
+</header>
+
+<section class="dashboard">
+    <div class="invoice-card">
+        <h2>Tax Invoice</h2>
+
+        <div class="invoice-meta">
+            <div>
+                <p><b>Company:</b> TestSeries Pvt Ltd</p>
+                <p><b>GSTIN:</b> 27ReadyAI2026F1Z5</p>
+                <p><b>Address:</b> Pune, Maharashtra, India</p>
+                <p style="margin-top: 10px;"><b>Billed To:</b> <span id="teacherName">Teacher Name</span></p>
+            </div>
+            <div style="text-align: right;">
+                <p><b>Invoice No:</b> <span id="inv"></span></p>
+                <p><b>Date:</b> <span id="date"></span></p>
+                <p><b>Payment ID:</b> <span id="pid"></span></p>
+            </div>
+        </div>
+
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span id="plan"></span> Subscription</td>
+                    <td id="amount"></td>
+                </tr>
+                <tr>
+                    <td>GST (18%)</td>
+                    <td id="gst"></td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total Paid</td>
+                    <td id="total"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="actions">
+            <button onclick="window.print()"><i class="fas fa-print"></i> Print Invoice</button>
+            <button class="secondary" onclick="window.print()">Download PDF</button>
+            <a href="dashboard.html">Go to Dashboard <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Logic matches student exactly to prevent "undefined"
+    const invoice = JSON.parse(localStorage.getItem("latestInvoice"));
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+
+    if(!invoice){
+        alert("Invoice not found.");
+        location.href="subscription.html";
+    } else {
+        // Map data from localStorage
+        document.getElementById("inv").innerText = invoice.invoiceNo;
+        document.getElementById("pid").innerText = invoice.paymentId;
+        document.getElementById("date").innerText = invoice.date;
+        document.getElementById("plan").innerText = invoice.plan;
+        document.getElementById("amount").innerText = invoice.amount;
+        document.getElementById("gst").innerText = invoice.gst;
+        document.getElementById("total").innerText = invoice.total;
+        
+        // Add teacher name to "Billed To"
+        if(user && user.full_name) {
+            document.getElementById("teacherName").innerText = user.full_name;
+        }
+    }
+</script>
+
+</body>
+</html>

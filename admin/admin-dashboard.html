@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Command | TestSeries Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --electric-blue: #0066FF; --deep-purple: #6B2FFF; --cyber-cyan: #00F5FF;
+            --midnight: #0A0E27; --pure-white: #FFFFFF; --light-bg: #f4f7fe;
+            --text-dark: #1e293b; --silver: #64748b;
+        }
+
+        body { 
+            margin: 0; font-family: 'Sora', sans-serif; background: var(--light-bg); 
+            color: var(--text-dark); padding-top: 80px; 
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 25px; }
+
+        /* --- Elite Stats Grid --- */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+            margin-bottom: 40px; 
+        }
+
+        .stat-card {
+            background: var(--midnight); padding: 35px; border-radius: 24px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+
+        .stat-card h2 { 
+            font-size: 42px; font-weight: 800; margin: 0; 
+            background: linear-gradient(135deg, #fff, var(--cyber-cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card p { 
+            font-family: 'Space Mono', monospace; color: var(--silver); 
+            text-transform: uppercase; font-size: 11px; letter-spacing: 2px; margin-top: 10px;
+        }
+
+        /* --- Quick Actions Card --- */
+        .action-card {
+            background: #fff; padding: 40px; border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+        }
+
+        .action-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;
+        }
+
+        .elite-btn {
+            padding: 18px; border-radius: 14px; font-weight: 800; font-size: 13px;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            border: none; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 12px;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: #fff; }
+        .btn-secondary { background: var(--midnight); color: #fff; }
+        .btn-outline { background: #fff; color: var(--midnight); border: 1.5px solid #e2e8f0; }
+        
+        /* New Style for Add Question Bank */
+        .btn-cyan { background: var(--cyber-cyan); color: var(--midnight); }
+
+        .elite-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div id="header-container"></div> 
+
+<div class="container">
+    <div style="margin-bottom: 40px;">
+        <h1 style="font-size: 36px; font-weight: 800; margin: 0; color: var(--midnight);">Intelligence Command</h1>
+        <p style="color: var(--silver); margin-top: 5px;">Unified Management & Neural Matrix Overview</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h2 id="totalTests">--</h2>
+            <p>Active Modules</p>
+        </div>
+        <div class="stat-card">
+            <h2 id="totalQuestions">--</h2>
+            <p>Intelligence Units (Q)</p>
+        </div>
+        <div class="stat-card" style="border-top: 3px solid var(--cyber-cyan);">
+            <h2 id="totalPdfs">--</h2>
+            <p>Repository Documents (PDF)</p>
+        </div>
+    </div>
+
+    <div class="action-card">
+        <h3 style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--electric-blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px;">Protocol Actions</h3>
+        
+        <div class="action-grid">
+            <button class="elite-btn btn-primary" onclick="go('create-mock-test.html')">
+                <i class="fas fa-plus"></i> Create Mock Test
+            </button>
+
+            <button class="elite-btn btn-cyan" onclick="go('question.html')">
+                <i class="fas fa-folder-plus"></i> Add Question Bank
+            </button>
+
+            <button class="elite-btn btn-secondary" onclick="go('question.html')">
+                <i class="fas fa-book-open"></i> Question Sector
+            </button>
+            <button class="elite-btn btn-outline" onclick="go('my-tests.html')">
+                <i class="fas fa-list"></i> View My Tests
+            </button>
+            <button class="elite-btn btn-outline" onclick="go('results.html')">
+                <i class="fas fa-chart-bar"></i> Performance Matrix
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===== AUTH PROTOCOL ===== */
+const token = localStorage.getItem("token");
+
+if (!token) {
+    location.href = "../login.html";
+}
+
+/* ===== UNIFIED DATA SYNC (Fixes ERR) ===== */
+async function loadCommandCenterStats() {
+    try {
+        // Calling the unified endpoint we built in the controller
+        const res = await fetch(getUrl('/api/admin/dashboard-stats'), {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            document.getElementById("totalTests").innerText = data.totalTests;
+            document.getElementById("totalQuestions").innerText = data.totalQuestions;
+            document.getElementById("totalPdfs").innerText = data.totalPdfs;
+        } else {
+            throw new Error("API responded with error");
+        }
+
+    } catch (err) { 
+        console.error("Neural Link Failure:", err); 
+        // Showing "--" instead of "ERR" for a cleaner look if server is busy
+        document.getElementById("totalTests").innerText = "--";
+        document.getElementById("totalQuestions").innerText = "--";
+        document.getElementById("totalPdfs").innerText = "--";
+    }
+}
+
+function go(page) { location.href = page; }
+
+loadCommandCenterStats();
+</script>
+
+<script src="layout.js"></script>
+</body>
+</html>

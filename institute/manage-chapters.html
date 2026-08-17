@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Repository | Elite Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        :root { 
+            --electric-blue: #0066FF; --midnight: #0A0E27; --silver: #64748b; 
+            --rose: #e11d48; --emerald: #059669; --light-bg: #f4f7fe;
+            --cyber-cyan: #00F5FF;
+        }
+
+        body { font-family: 'Sora', sans-serif; background: var(--light-bg); margin: 0; padding-top: 120px; color: var(--midnight); }
+        .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 20px 100px; }
+
+        /* --- Creation Card --- */
+        .form-card { 
+            background: #fff; padding: 35px; border-radius: 24px; border: 1px solid #e2e8f0; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 40px; 
+        }
+        .input-grid { display: grid; grid-template-columns: 2fr 1.2fr 1.2fr auto; gap: 15px; align-items: end; }
+        
+        label { display: block; font-family: 'Space Mono'; font-size: 10px; color: var(--silver); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 13px; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: var(--electric-blue); }
+
+        .btn-create { background: var(--midnight); color: var(--cyber-cyan); padding: 13px 25px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; font-family: 'Space Mono'; font-size: 12px; }
+
+        /* --- Chapter Row UI --- */
+        .chapter-row { 
+            background: #fff; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        .chapter-row:hover { border-color: var(--electric-blue); transform: translateY(-2px); }
+        
+        .action-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .btn-elite { 
+            padding: 10px 18px; border-radius: 10px; text-decoration: none; 
+            font-weight: 800; font-size: 11px; transition: 0.3s; 
+            display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent;
+        }
+
+        .btn-add { background: #eef2ff; color: var(--electric-blue); border-color: #c7d2fe; }
+        .btn-view { background: #ecfdf5; color: var(--emerald); border-color: #a7f3d0; }
+        .btn-delete { background: #fff1f2; color: var(--rose); border-color: #fecaca; cursor: pointer; }
+        
+        .btn-add:hover { background: var(--electric-blue); color: #fff; }
+        .btn-view:hover { background: var(--emerald); color: #fff; }
+        .btn-delete:hover { background: var(--rose); color: #fff; }
+
+        #loadingState { text-align: center; padding: 50px; color: var(--silver); font-family: 'Space Mono'; }
+    </style>
+</head>
+<body>
+
+<div id="header-placeholder"></div>
+
+<main class="wrapper">
+    <div style="margin-bottom: 40px;">
+        <h1 style="font-weight: 800; color: var(--midnight); letter-spacing: -1.5px; font-size: 32px; margin: 0;">Intelligence Repository</h1>
+        <p style="font-family: 'Space Mono'; font-size: 12px; color: var(--silver); margin-top: 5px;">MANAGE GLOBAL CHAPTER MODULES</p>
+    </div>
+
+    <div class="form-card">
+        <form id="chapterForm" class="input-grid">
+            <div>
+                <label>Chapter Designation</label>
+                <input type="text" id="chapName" placeholder="e.g. Physics | Kinematics" required>
+            </div>
+            <div>
+                <label>Subject</label>
+                <select id="chapSub">
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Maths">Maths</option>
+                    <option value="Biology">Biology</option>
+                </select>
+            </div>
+            <div>
+                <label>Series</label>
+                <select id="chapSeries">
+                    <option value="JEE Main">JEE Main</option>
+                    <option value="JEE Advanced">JEE Advanced</option>
+                    <option value="NEET">NEET</option>
+                    <option value="MHTCET">MHTCET</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-create">INITIALIZE</button>
+        </form>
+    </div>
+
+    <div id="chapterList">
+        <div id="loadingState">
+            <i class="fas fa-sync fa-spin"></i> SYNCING_VAULT...
+        </div>
+    </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="layout.js"></script>
+
+<script>
+    /* ================= STANDALONE CONFIG ================= */
+    const BASE_URL = ""; // Set to your domain if the API is on a separate domain
+    const token = localStorage.getItem("token");
+
+    if (!token) { window.location.href = "../login.html"; }
+
+    async function loadChapters() {
+        const listContainer = document.getElementById("chapterList");
+        try {
+            // Replaced getUrl with direct string paths
+            const res = await fetch(BASE_URL + '/api/teacher/get-all-chapters', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            if(!data.chapters || data.chapters.length === 0) {
+                listContainer.innerHTML = `<div style="text-align:center; color:var(--silver); padding:50px; font-family:'Space Mono';">NO_BANK_RECORDS_FOUND</div>`;
+                return;
+            }
+
+            listContainer.innerHTML = data.chapters.map(c => `
+                <div class="chapter-row">
+                    <div>
+                        <span style="font-family:'Space Mono'; font-size:10px; color:var(--electric-blue); font-weight:800;">${c.series.toUpperCase()}</span>
+                        <h3 style="font-weight:800; margin: 5px 0;">${c.chapter_name}</h3>
+                        <span style="font-size:11px; color:var(--silver); font-weight:700;">SUBJECT: ${c.subject}</span>
+                    </div>
+                    <div class="action-group">
+                        <a href="add-bank-question.html?chapterId=${c.id}&name=${encodeURIComponent(c.chapter_name)}" class="btn-elite btn-add">
+                            <i class="fas fa-plus"></i> ADD
+                        </a>
+                        <a href="view-chapter-questions.html?chapterId=${c.id}&name=${encodeURIComponent(c.chapter_name)}" class="btn-elite btn-view">
+                            <i class="fas fa-eye"></i> VIEW
+                        </a>
+                        <button class="btn-elite btn-delete" onclick="deleteChapter(${c.id}, '${c.chapter_name.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) { 
+            listContainer.innerHTML = `<div style="text-align:center; color:red; padding:50px;">UPLINK_FAILURE: DATABASE_UNREACHABLE</div>`;
+        }
+    }
+
+    document.getElementById("chapterForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const payload = {
+            chapter_name: document.getElementById("chapName").value,
+            subject: document.getElementById("chapSub").value,
+            series: document.getElementById("chapSeries").value
+        };
+
+        const res = await fetch(BASE_URL + '/api/teacher/create-chapter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+
+        if((await res.json()).success) {
+            document.getElementById("chapName").value = "";
+            loadChapters();
+        }
+    };
+
+    async function deleteChapter(id, name) {
+        if(!confirm(`PERMANENTLY DELETE "${name}" AND ALL ASSOCIATED UNITS?`)) return;
+        
+        const res = await fetch(BASE_URL + `/api/teacher/delete-chapter/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if((await res.json()).success) loadChapters();
+    }
+
+    // Launch sequence
+    window.onload = loadChapters;
+</script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyChat & Groups | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .dashboard-wrapper {
+            padding: 40px 0 100px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        /* Group Cards (Left Side) */
+        .batch-header {
+            margin-bottom: 25px;
+            color: #1e3a8a;
+            font-weight: 800;
+        }
+
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .group-elite-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .group-elite-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-blue);
+        }
+
+        .group-elite-card.active {
+            border-color: var(--electric-blue);
+            box-shadow: 0 10px 40px rgba(0, 102, 255, 0.1);
+            background: #f0f7ff;
+        }
+
+        .group-elite-card h3 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .group-elite-card p {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--silver);
+            text-transform: uppercase;
+        }
+
+        /* Chat Window (Right Side) */
+        .chat-elite-window {
+            background: #fff;
+            height: calc(100vh - 200px);
+            min-height: 600px;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            position: sticky;
+            top: 120px;
+        }
+
+        .chat-elite-header {
+            padding: 20px 25px;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .chat-elite-header span {
+            font-weight: 800;
+            color: #1e3a8a;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Message Bubbles */
+        .msg-bubble {
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .msg-bubble.mine {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple));
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-bubble.others {
+            align-self: flex-start;
+            background: white;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-sender {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: block;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        /* Input Area */
+        .chat-input-wrapper {
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            gap: 12px;
+            border-radius: 0 0 24px 24px;
+        }
+
+        .chat-input-wrapper input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            outline: none;
+            font-family: var(--font-display);
+            transition: 0.3s;
+        }
+
+        .chat-input-wrapper input:focus { border-color: var(--electric-blue); }
+
+        .chat-send-btn {
+            background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple));
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 800;
+            transition: 0.3s;
+        }
+
+        .chat-send-btn:hover { transform: scale(1.05); }
+
+        @media (max-width: 992px) {
+            .dashboard-wrapper { grid-template-columns: 1fr; }
+            .chat-elite-window { height: 500px; position: relative; top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+
+<main class="dashboard-wrapper">
+    <section>
+        <h2 class="batch-header"><i class="fas fa-users"></i> My Active Batches</h2>
+        <div id="groupsList" class="groups-grid">
+            <p style="font-family: var(--font-mono); color: var(--silver);">Syncing with batch servers...</p>
+        </div>
+    </section>
+
+    <aside class="chat-elite-window">
+        <div class="chat-elite-header">
+            <span id="activeGroupName">Select Batch Discussion</span>
+            <i class="fas fa-circle" style="color: #10b981; font-size: 10px;"></i>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <div style="text-align: center; margin-top: 150px; opacity: 0.5;">
+                <i class="fas fa-comments fa-3x" style="margin-bottom: 15px; color: var(--electric-blue);"></i>
+                <p style="font-family: var(--font-mono);">Choose a batch to start collaborating</p>
+            </div>
+        </div>
+        <div class="chat-input-wrapper">
+            <input type="text" id="messageInput" placeholder="Secure message..." onkeypress="handleKeyPress(event)">
+            <button class="chat-send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </aside>
+</main>
+
+<script src="layout.js"></script>
+
+<script>
+const token = localStorage.getItem("token");
+const userString = localStorage.getItem("currentUser");
+const currentUser = userString ? JSON.parse(userString) : null;
+let activeGroupId = null;
+
+if (!token || !currentUser) window.location.href = "../login.html";
+
+/* --- LOAD GROUPS --- */
+async function loadGroups() {
+    try {
+        const res = await fetch('/api/student/my-groups', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) {
+            const list = document.getElementById('groupsList');
+            if (data.groups.length === 0) { 
+                list.innerHTML = "<p style='font-family: var(--font-mono);'>No batch assignments found.</p>"; 
+                return; 
+            }
+            list.innerHTML = data.groups.map(g => `
+                <div class="group-elite-card" onclick="selectGroup(${g.id}, '${g.group_name}')" id="card-${g.id}">
+                    <h3>${g.group_name}</h3>
+                    <p><i class="fas fa-user-shield"></i> Lead: ${g.teacher_name || 'System Admin'}</p>
+                </div>
+            `).join('');
+        }
+    } catch(err){ console.error(err); }
+}
+
+/* --- SELECTION & MESSAGES --- */
+async function selectGroup(id, name) {
+    activeGroupId = id;
+    document.getElementById('activeGroupName').innerText = name;
+    document.querySelectorAll('.group-elite-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('card-' + id).classList.add('active');
+    fetchMessages();
+}
+
+async function fetchMessages() {
+    if(!activeGroupId) return;
+    try {
+        const res = await fetch(`/api/student/messages/${activeGroupId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if(data.success){
+            const container = document.getElementById('chatMessages');
+            if(data.messages.length===0){ 
+                container.innerHTML='<p style="text-align:center; font-family:var(--font-mono); opacity:0.5; margin-top:50px;">Discussion initiated. Be the first to speak.</p>'; 
+                return; 
+            }
+            container.innerHTML = data.messages.map(m => `
+                <div class="msg-bubble ${m.sender_id===currentUser.id?'mine':'others'}">
+                    <span class="msg-sender">${m.sender_id===currentUser.id?'You':(m.full_name||'Instructor')}</span>
+                    ${m.message_text}
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+    } catch(err){ console.error(err); }
+}
+
+/* --- SENDING --- */
+async function sendMessage() {
+    const input = document.getElementById('messageInput'); 
+    const message = input.value.trim();
+    if(!message || !activeGroupId) return;
+    try {
+        const res = await fetch('/api/student/post-message', {
+            method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+            body: JSON.stringify({ groupId:activeGroupId, message })
+        });
+        const data = await res.json();
+        if(data.success){ input.value=''; fetchMessages(); }
+    } catch(err){ alert("Uplink failed. Message not sent."); }
+}
+
+function handleKeyPress(e){ if(e.key==='Enter') sendMessage(); }
+function logout(){ localStorage.clear(); location.href="../login.html"; }
+
+// Auto-refresh poll (standard implementation)
+setInterval(()=>{ if(activeGroupId) fetchMessages(); },4000);
+window.onload = loadGroups;
+</script>
+
+</body>
+</html>

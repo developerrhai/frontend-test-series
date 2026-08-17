@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Results - Malpractice Reports</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+body { font-family: Arial; background: #f4f6fb; margin:0; padding:20px; }
+h1 { color: #1e40af; margin-bottom:20px; text-align:center; }
+.container { max-width:1200px; margin:0 auto; }
+.card { background:#fff; padding:20px; margin:15px 0; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
+.card.max-warnings { border:2px solid red; }
+.card h3 { margin:0 0 10px 0; color:#1e40af; }
+.card p { margin:4px 0; }
+.card details { margin-top:10px; }
+.card img { border:1px solid #d1d5db; border-radius:6px; margin:5px; max-height:120px; }
+.snapshots { display:flex; flex-wrap:wrap; max-height:200px; overflow-y:auto; margin-top:5px; }
+.face-summary { font-weight:bold; margin-bottom:5px; }
+.face-summary.green { color:#22c55e; }
+.face-summary.orange { color:#f59e0b; }
+.face-summary.red { color:#dc2626; }
+pre { background:#f0f0f0; padding:10px; border-radius:6px; overflow-x:auto; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Exam Results & Malpractice Reports</h1>
+    <div id="resultsContainer"><p>Loading reports...</p></div>
+</div>              
+
+<script>
+// ===== RENDER RESULTS =====
+const token = localStorage.getItem("token");
+const resultsContainer = document.getElementById("resultsContainer");
+
+if (!token) { location.href = "../login.html"; }
+
+async function fetchResults() {
+    try {
+        const response = await fetch('/api/admin/all-results', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            renderResults(data.results);
+        }
+    } catch (err) {
+        resultsContainer.innerHTML = "<p>Error connecting to database.</p>";
+    }
+}
+
+function renderResults(examResults) {
+    resultsContainer.innerHTML = "";
+
+    if (!examResults || examResults.length === 0) {
+        resultsContainer.innerHTML = "<p>No student has attempted any exams yet.</p>";
+        return;
+    }
+
+    examResults.forEach(r => {
+        // We only parse what we actually use
+        const answers = r.answers ? JSON.parse(r.answers) : {};
+        const timeSpent = r.time_spent ? JSON.parse(r.time_spent) : [];
+        
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        card.innerHTML = `
+            <h3>${r.studentName} (${r.studentEmail})</h3>
+            <p><b>Exam:</b> ${r.examTitle}</p>
+            <p><b>Score:</b> ${r.score}</p>
+            <p><b>Submitted:</b> ${new Date(r.created_at).toLocaleString()}</p>
+            
+            <details>
+                <summary>View Detailed Time Analysis</summary>
+                <p>Time Spent per Question (sec): ${timeSpent.join(", ")}</p>
+                <div style="margin-top:10px;">
+                    <b>Answers Data:</b>
+                    <pre>${JSON.stringify(answers, null, 2)}</pre>
+                </div>
+            </details>
+        `;
+
+        resultsContainer.appendChild(card);
+    });
+}
+        
+
+// Initial Load & Auto-Refresh
+fetchResults();
+setInterval(fetchResults, 10000); // 10s refresh for live proctoring
+</script>
+
+</body>
+</html>

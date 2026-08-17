@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment | TestSeries</title>
+
+<style>
+body{ font-family:'Segoe UI',Arial,sans-serif; background:#f4f6fb; margin:0; }
+.header{ background:#1e293b; color:#fff; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; }
+.container{ max-width:520px; background:#fff; margin:60px auto; padding:30px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.1); }
+h2{ text-align:center; margin-top:0; color:#1e293b; }
+.plan-box{ background:#f1f5f9; padding:20px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0; }
+.plan-box p{ display:flex; justify-content:space-between; margin:8px 0; color:#475569; }
+.total-row{ border-top:2px solid #cbd5e1; padding-top:10px; margin-top:10px; font-weight:bold; font-size:1.1rem; color:#1e40af; }
+.pay-btn{ width:100%; padding:14px; background:#2563eb; color:#fff; border:none; font-size:16px; cursor:pointer; border-radius:6px; font-weight:bold; transition:.3s; }
+.pay-btn:hover{ background:#1d4ed8; }
+.pay-btn:disabled{ background:#94a3b8; cursor:not-allowed; }
+.note{ text-align:center; font-size:13px; margin-top:15px; color:#64748b; }
+</style>
+</head>
+
+<body>
+
+
+<div class="header">
+  <div style="font-weight:bold;font-size:1.2rem;">TestSeries</div>
+  <div id="userRole" style="background:rgba(255,255,255,.1); padding:4px 10px; border-radius:4px;"></div>
+</div>
+
+<div class="container">
+  <h2>Complete Payment</h2>
+  <div class="plan-box" id="planDetails">Loading details...</div>
+  <button id="payBtn" class="pay-btn" onclick="makePayment()">Pay Now & Get Invoice</button>
+  <p class="note">Secure SSL Encrypted Transaction</p>
+</div>
+
+<script>
+// ---------------- SESSION LOAD ----------------
+const user = JSON.parse(localStorage.getItem("currentUser"));
+const token = localStorage.getItem("token");
+const planRaw = localStorage.getItem("selectedPlan");
+const subscriptions = JSON.parse(localStorage.getItem("subscriptions")) || {};
+
+// ---------------- VALIDATION ----------------
+if(!user || !token || !planRaw){
+  alert("Session invalid. Redirecting to login.");
+  location.href="../login.html";
+}
+
+// ---------------- ACTIVE SUBSCRIPTION CHECK ----------------
+if(subscriptions[user.email]){
+  const expiry = new Date(subscriptions[user.email].expiry);
+  if(new Date() < expiry){
+    alert("Subscription already active.");
+    location.href="tests.html";
+  }
+}
+
+const plan = JSON.parse(planRaw);
+document.getElementById("userRole").innerText = (user.role || "Student").toUpperCase();
+
+// ---------------- UI CALCULATION ----------------
+const amount = parseFloat(plan.amount) || 0;
+const planName = plan.name || "Subscription Plan";
+const duration = plan.duration || "30 Days";
+const gst = (amount * 0.18).toFixed(2);
+const total = (amount * 1.18).toFixed(2);
+
+document.getElementById("planDetails").innerHTML = `
+  <p><span>Plan:</span><b>${planName}</b></p>
+  <p><span>Duration:</span><b>${duration}</b></p>
+  <p><span>Base Amount:</span><b>₹${amount}</b></p>
+  <p><span>GST (18%):</span><b>₹${gst}</b></p>
+  <div class="total-row"><span>Total Payable:</span><span>₹${total}</span></div>
+`;
+
+// ---------------- PAYMENT ----------------
+async function makePayment(){
+  const btn = document.getElementById("payBtn");
+  btn.disabled = true;
+  btn.innerText = "Processing...";
+
+  const transactionId = "TXN-" + Date.now();
+
+  try{
+    const res = await fetch("/api/payment/upgrade",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${token}`
+      },
+      body:JSON.stringify({
+        planName,
+        amount: total,
+        transactionId,
+        durationDays:30
+      })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      const invoiceData = {
+        invoiceNo: "INV-" + Math.floor(1000 + Math.random()*9000),
+        paymentId: transactionId,
+        plan: planName,
+        amount: amount.toFixed(2),
+        gst,
+        total,
+        date: new Date().toLocaleDateString()
+      };
+
+      localStorage.setItem("latestInvoice", JSON.stringify(invoiceData));
+
+      user.plan = planName;
+      user.expiry_date = data.expiry_date;
+      localStorage.setItem("currentUser", JSON.stringify(user));
+
+      alert("Payment Successful!");
+      location.href="invoice.html";
+    }else{
+      alert(data.message || "Payment failed");
+      btn.disabled=false;
+      btn.innerText="Pay Now & Get Invoice";
+    }
+  }catch(err){
+    alert("Server error. Check backend connection.");
+    btn.disabled=false;
+    btn.innerText="Pay Now & Get Invoice";
+  }
+}
+</script>
+
+</body>
+</html>

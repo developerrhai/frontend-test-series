@@ -1,0 +1,296 @@
+/* ===================================
+   1. LIGHT THEME CORE
+   =================================== */
+:root {
+  --electric-blue: #0066FF;
+  --deep-purple: #6B2FFF;
+  --cyber-cyan: #00F5FF;
+  --midnight: #0A0E27; 
+  --pure-white: #FFFFFF;
+  --light-bg: #f4f7fe; 
+  --text-dark: #1e293b;
+  --silver: #64748b;
+  --font-display: 'Sora', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --container-max: 1400px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  /* Fixes the horizontal scrolling issue */
+  overflow-x: hidden; 
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-display);
+  background-color: var(--light-bg);
+  color: var(--text-dark);
+  line-height: 1.7;
+  padding-top: 100px;
+}
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 20px; /* Reduced padding for mobile safety */
+}
+
+/* ===================================
+   2. FIXED ELITE HEADER (MOBILE FIXED)
+   =================================== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 15px 0; /* Slightly more compact */
+  backdrop-filter: blur(20px);
+  background: rgba(10, 14, 39, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+.nav-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px; /* Scaled down slightly for mobile */
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--electric-blue), var(--cyber-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+
+.nav-links { 
+  display: flex; 
+  gap: 30px; 
+  align-items: center; 
+}
+
+.nav-links a { 
+  color: #fff; 
+  text-decoration: none; 
+  font-size: 15px; 
+  font-weight: 500; 
+  transition: 0.3s;
+}
+
+.nav-links a:hover { color: var(--cyber-cyan); }
+
+.nav-cta {
+  background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple));
+  color: white !important;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+/* ===================================
+   3. MOBILE MENU FIXES
+   =================================== */
+.mobile-toggle { 
+  display: none; 
+  flex-direction: column; 
+  gap: 6px; 
+  cursor: pointer; 
+  background: none; 
+  border: none; 
+  padding: 5px;
+  z-index: 1100;
+}
+
+.mobile-toggle span { 
+  width: 26px; 
+  height: 2px; 
+  background: white; 
+  transition: 0.3s ease;
+  border-radius: 2px;
+}
+
+@media (max-width: 992px) {
+  .nav-links { gap: 15px; } /* Tighten spacing on tablets */
+}
+
+@media (max-width: 768px) {
+  .mobile-toggle { display: flex; }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: 0; /* Slide from right for better UX */
+    height: 100vh;
+    width: 260px; /* Fixed width sidebar */
+    flex-direction: column;
+    background: rgba(10, 14, 39, 0.98);
+    padding: 100px 30px 30px;
+    gap: 20px;
+    transform: translateX(100%); /* Start hidden on right */
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
+    opacity: 0;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    align-items: flex-start;
+  }
+
+  .nav-links.active {
+    transform: translateX(0);
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .nav-links a {
+    width: 100%;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 16px;
+  }
+}
+
+/* ===================================
+   4. DASHBOARD & FOOTER (STAYS SAME)
+   =================================== */
+.dashboard {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 30px 20px;
+  background: var(--pure-white); 
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); 
+  border: 1px solid #e2e8f0;
+}
+
+/* ===================================
+   4. FIXED ELITE FOOTER
+   =================================== */
+.footer {
+    background: var(--midnight);
+    color: #fff;
+    padding: 80px 0 40px;
+    margin-top: auto; /* Keeps footer at bottom of short pages */
+    width: 100%;
+    position: relative;
+    z-index: 10;
+}
+
+/* Grid logic for Desktop */
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr; /* Specific desktop widths */
+    gap: 60px;
+    margin-bottom: 60px;
+}
+
+.footer-brand h3 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--electric-blue), var(--cyber-cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.footer-brand p {
+    color: var(--silver);
+    font-size: 14px;
+    line-height: 1.8;
+    max-width: 320px;
+}
+
+.footer h4 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--pure-white);
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: var(--silver);
+    text-decoration: none;
+    font-size: 14px;
+    transition: 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--cyber-cyan);
+    padding-left: 5px;
+}
+
+.footer-contact {
+    list-style: none;
+    padding: 0;
+    color: var(--silver);
+    font-size: 14px;
+}
+
+.footer-contact li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-contact i {
+    color: var(--electric-blue);
+    font-size: 16px;
+}
+
+/* Bottom Bar */
+.footer-bottom {
+    padding-top: 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    color: var(--silver);
+    font-size: 13px;
+    font-family: var(--font-mono);
+}
+
+/* ===================================
+   MOBILE RESPONSIVE FOOTER
+   =================================== */
+@media (max-width: 992px) {
+    .footer-grid {
+        grid-template-columns: 1fr 1fr; /* 2 columns on tablets */
+        gap: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer {
+        padding: 60px 0 30px;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr; /* 1 column on mobile */
+        text-align: center;
+        gap: 50px;
+    }
+
+    .footer-brand p {
+        margin: 0 auto;
+    }
+
+    .footer-contact li {
+        justify-content: center;
+    }
+}

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --electric-blue: #0066FF; --deep-purple: #6B2FFF; --cyber-cyan: #00F5FF;
+            --midnight: #0A0E27; --pure-white: #FFFFFF; --light-bg: #f4f7fe; 
+            --text-dark: #1e293b; --silver: #64748b; --font-display: 'Sora', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: var(--font-display); 
+            background-color: var(--light-bg); 
+            color: var(--text-dark); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* HEADER & NAVIGATION */
+        .header {
+            background: rgba(10, 14, 39, 0.95); 
+            backdrop-filter: blur(20px);
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            position: fixed; 
+            top: 0; left: 0; right: 0; 
+            z-index: 1000;
+        }
+
+        .nav-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { 
+            font-size: 22px; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, var(--electric-blue), var(--cyber-cyan)); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            text-decoration: none; 
+        }
+
+        /* Nav Links for Desktop */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-links a { 
+            color: #fff; 
+            text-decoration: none; 
+            font-size: 13px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            transition: 0.3s; 
+        }
+        
+        .nav-links a:hover { color: var(--cyber-cyan); }
+
+        /* Mobile Menu Toggle */
+        .mobile-toggle {
+            display: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* LOGIN CARD */
+        .login-container { 
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 100px 20px 40px; 
+        }
+
+        .auth-card { 
+            background: var(--pure-white); 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 40px 30px; 
+            border-radius: 24px; 
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08); 
+            border: 1px solid #e2e8f0; 
+            text-align: center; 
+        }
+
+        .auth-card h2 { font-size: 24px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px; }
+        .auth-card p { font-family: var(--font-mono); font-size: 10px; color: var(--silver); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 30px; }
+
+        /* INPUTS */
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--electric-blue); font-weight: 700; margin-bottom: 8px; }
+        input { 
+            width: 100%; 
+            padding: 14px 18px; 
+            border-radius: 12px; 
+            border: 1.5px solid #e2e8f0; 
+            background: #f8fafc; 
+            font-size: 14px; 
+            font-family: inherit;
+            outline: none; 
+            transition: 0.3s; 
+        }
+        input:focus { background: #fff; border-color: var(--electric-blue); box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1); transform: translateY(-1px); }
+
+        /* BUTTON */
+        .login-btn { 
+            width: 100%; 
+            padding: 16px; 
+            background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); 
+            color: #fff; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2); 
+            margin-top: 10px;
+        }
+        .login-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(107, 47, 255, 0.3); }
+
+        /* FOOTER */
+        .footer { 
+            background: var(--midnight); 
+            color: #fff; 
+            padding: 25px 20px; 
+            text-align: center; 
+            border-top: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+        .footer p { font-size: 12px; color: var(--silver); }
+
+        /* ===================================
+           MOBILE RESPONSIVENESS
+           =================================== */
+        @media (max-width: 768px) {
+            .mobile-toggle { display: block; }
+
+            .nav-links {
+                position: fixed;
+                top: 60px; /* Adjust based on header height */
+                right: -100%;
+                width: 250px;
+                height: calc(100vh - 60px);
+                background: rgba(10, 14, 39, 0.98);
+                flex-direction: column;
+                padding: 40px 20px;
+                transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+                backdrop-filter: blur(10px);
+            }
+
+            .nav-links.active { right: 0; }
+
+            .nav-links a {
+                font-size: 16px;
+                width: 100%;
+                text-align: left;
+                padding: 10px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .auth-card {
+                padding: 35px 20px;
+                border-radius: 20px;
+                margin: 0 10px;
+            }
+
+            .auth-card h2 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+
+<header class="header">
+    <div class="nav-container">
+        <a href="index.html" class="logo">TestSeries</a>
+        
+        <div class="mobile-toggle" id="mobile-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav class="nav-links" id="nav-links">
+            <a href="index.html">Home</a>
+            <a href="aboutus.html">About</a>
+            <a href="register.html">Register</a>
+            <a href="contactus.html">Contact</a>
+        </nav>
+    </div>
+</header>
+
+<main class="login-container">
+    <div class="auth-card">
+        <h2>Secure Login</h2>
+        <p>Intelligence Portal Access</p>
+        <div class="input-group">
+            <label>Neural Link (Email)</label>
+            <input id="email" type="email" placeholder="name@example.com">
+        </div>
+        <div class="input-group">
+            <label>Access Key (Password)</label>
+            <input id="password" type="password" placeholder="••••••••">
+        </div>
+        <button id="loginBtn" class="login-btn">Initialize Uplink</button>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>© 2026 ReadyHand AI Technology & Infynex Groups. All Rights Reserved.</p>
+</footer>
+
+<script>
+    // --- Mobile Menu Toggle Logic ---
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const navLinks = document.getElementById('nav-links');
+
+    mobileToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        const icon = mobileToggle.querySelector('i');
+        icon.classList.toggle('fa-bars');
+        icon.classList.toggle('fa-times');
+    });
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+        });
+    });
+
+    // --- Original Login Logic ---
+    document.getElementById("loginBtn").addEventListener("click", async function() {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        if (!email || !password) return alert("Credentials Required");
+        
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+
+        try {
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+            if (data.success) {
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("currentUser", JSON.stringify(data.user));
+                const role = data.user.role;
+                if (role === "admin") window.location.href = "admin/admin-dashboard.html";
+                else if (role === "teacher") window.location.href = "institute/dashboard.html";
+                else if (role === "student") window.location.href = "student/profile.html";
+            } else { 
+                alert(data.message); 
+                this.disabled = false; 
+                this.innerText = 'Initialize Uplink'; 
+            }
+        } catch (e) { 
+            alert("Server Error"); 
+            this.disabled = false; 
+            this.innerText = 'Initialize Uplink'; 
+        }
+    });
+</script>
+</body>
+</html>

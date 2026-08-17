@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Bank Editor | Elite Admin</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --electric-blue: #0066FF;
+            --deep-purple: #6B2FFF;
+            --cyber-cyan: #00F5FF;
+            --midnight: #0A0E27;
+            --pure-white: #FFFFFF;
+            --light-bg: #f4f7fe;
+            --text-dark: #1e293b;
+            --silver: #64748b;
+            --neon-green: #00FF88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--light-bg);
+            padding-top: 110px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- MINI HEADER --- */
+        .mini-header { position: fixed; top: 0; width: 100%; background: var(--midnight); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); }
+        .back-link { color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; font-family: 'Space Mono'; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        .back-link:hover { color: var(--cyber-cyan); }
+        .test-title { color: var(--cyber-cyan); font-family: 'Space Mono'; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px; flex: 1; text-align: center; }
+        .editor-card { background: #fff; padding: 45px; border-radius: 28px; border: 1px solid #e2e8f0; box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05); position: relative; }
+        
+        .input-group { margin-bottom: 25px; text-align: left; }
+        .input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--electric-blue); text-transform: uppercase; margin-bottom: 10px; font-family: 'Space Mono'; letter-spacing: 1.5px; }
+        textarea, input, select { width: 100%; padding: 18px; border-radius: 14px; border: 2px solid #e2e8f0; background: #f8fafc; font-size: 15px; outline: none; transition: 0.3s; font-family: inherit; }
+        textarea:focus, input:focus { border-color: var(--electric-blue); background: #fff; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .sync-btn { width: 100%; padding: 22px; background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: white; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; transition: 0.3s; }
+        .sync-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(107, 47, 255, 0.3); }
+        
+        .preview-img { max-width: 100%; max-height: 250px; border-radius: 14px; margin-top: 15px; display: none; border: 1px solid #e2e8f0; }
+        .q-preview-box { background: #fff; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; border-left: 8px solid var(--neon-green); margin-bottom: 15px; position: relative; }
+        .delete-unit { position: absolute; top: 25px; right: 25px; color: #f43f5e; cursor: pointer; }
+    </style>
+</head>
+
+<body>
+
+    <header class="mini-header">
+        <a href="view-question-bank.html" class="back-link"><i class="fas fa-chevron-left"></i> REPOSITORY HUB</a>
+        <div class="test-title" id="chapterTitleDisplay">EDITOR: UPLINK_STANDBY</div>
+    </header>
+
+    <main class="container">
+        <h2 style="font-weight: 800; color: var(--midnight); font-size: 32px; margin-bottom: 40px;">Chapter Intelligence Deployment</h2>
+
+        <section class="editor-card">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="input-group">
+                    <label>Intelligence Mode</label>
+                    <select id="qType" onchange="toggleNumerical()">
+                        <option value="single">Single Choice (MCQ)</option>
+                        <option value="multiple">Multiple Correct (MSQ)</option>
+                        <option value="numerical">Numerical (NAT)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Visual Diagram</label>
+                    <input type="file" id="qImg" accept="image/*" onchange="handleImage(this)">
+                    <img id="imgPreview" class="preview-img">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Question Content</label>
+                <textarea id="qText" rows="4" placeholder="Describe the problem..."></textarea>
+            </div>
+
+            <div id="optionsGrid" class="options-grid">
+                <div class="input-group"><label>Vector A</label><input id="optA" placeholder="Value A"></div>
+                <div class="input-group"><label>Vector B</label><input id="optB" placeholder="Value B"></div>
+                <div class="input-group"><label>Vector C</label><input id="optC" placeholder="Value C"></div>
+                <div class="input-group"><label>Vector D</label><input id="optD" placeholder="Value D"></div>
+            </div>
+
+            <div class="input-group">
+                <label>Solution Vector (Key)</label>
+                <div id="ansContainer">
+                    <select id="correctAns">
+                        <option value="A">OPTION A</option>
+                        <option value="B">OPTION B</option>
+                        <option value="C">OPTION C</option>
+                        <option value="D">OPTION D</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label style="color: var(--neon-green);">Explanation</label>
+                <textarea id="explanation" rows="3" placeholder="Provide step-by-step logic..."></textarea>
+            </div>
+
+            <button class="sync-btn" onclick="deployQuestion()" id="mainBtn">Sync to Chapter Bank</button>
+        </section>
+
+        <h4 style="margin: 40px 0 20px; font-family: 'Space Mono'; font-size: 13px; color: var(--silver);">LIVE BANK PREVIEW</h4>
+        <div id="qPreviewList"></div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem("token");
+        const params = new URLSearchParams(window.location.search);
+        const chapterId = params.get("chapterId");
+        let imageBase64 = null;
+
+        if (!token || !chapterId) window.location.href = "view-question-bank.html";
+
+        function getAuthHeaders() {
+            const cleanToken = token.replace('Bearer ', '').trim();
+            return {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cleanToken}`
+            };
+        }
+
+        function toggleNumerical() {
+            const type = document.getElementById("qType").value;
+            const optGrid = document.getElementById("optionsGrid");
+            const ansContainer = document.getElementById("ansContainer");
+
+            if (type === 'numerical') {
+                optGrid.style.display = 'none';
+                ansContainer.innerHTML = `<input type="text" id="correctAns" placeholder="e.g. 15.5">`;
+            } else if (type === 'multiple') {
+                optGrid.style.display = 'grid';
+                ansContainer.innerHTML = `<input type="text" id="correctAns" placeholder="e.g. A,C" style="text-transform:uppercase;">`;
+            } else {
+                optGrid.style.display = 'grid';
+                ansContainer.innerHTML = `
+                    <select id="correctAns">
+                        <option value="A">OPTION A</option><option value="B">OPTION B</option>
+                        <option value="C">OPTION C</option><option value="D">OPTION D</option>
+                    </select>`;
+            }
+        }
+
+        function handleImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imageBase64 = e.target.result;
+                    document.getElementById("imgPreview").src = imageBase64;
+                    document.getElementById("imgPreview").style.display = "block";
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function refreshPreview() {
+            try {
+                const res = await fetch(`/api/admin/get-chapter-questions/${chapterId}`, { headers: getAuthHeaders() });
+                const data = await res.json();
+                const container = document.getElementById("qPreviewList");
+
+                if (data.success) {
+                    container.innerHTML = data.questions.map((q, i) => `
+                        <div class="q-preview-box">
+                            <div style="font-family:'Space Mono'; font-size:10px; color:var(--silver); margin-bottom:10px;">UNIT_#${i + 1} | ${q.q_type.toUpperCase()}</div>
+                            <h6>${q.question_text}</h6>
+                            <div style="margin-top:10px; color:var(--electric-blue); font-weight:800;">KEY: ${q.correct_option}</div>
+                            <i class="fas fa-trash-alt delete-unit" onclick="purgeQuestion(${q.id})"></i>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error("Sync Error."); }
+        }
+
+        async function deployQuestion() {
+            const btn = document.getElementById("mainBtn");
+            const qType = document.getElementById("qType").value;
+
+            const payload = {
+                chapterId: chapterId,
+                questionText: (document.getElementById("qText")?.value || "").trim(),
+                optionA: qType === 'numerical' ? "" : (document.getElementById("optA")?.value || ""),
+                optionB: qType === 'numerical' ? "" : (document.getElementById("optB")?.value || ""),
+                optionC: qType === 'numerical' ? "" : (document.getElementById("optC")?.value || ""),
+                optionD: qType === 'numerical' ? "" : (document.getElementById("optD")?.value || ""),
+                correctOption: (document.getElementById("correctAns")?.value || "").trim().toUpperCase(),
+                qType: qType,
+                explanation: (document.getElementById("explanation")?.value || "").trim(),
+                image_url: imageBase64 || null
+            };
+
+            if (!payload.questionText || !payload.correctOption) return alert("Required: Question Text and Key.");
+
+            btn.disabled = true;
+            btn.innerHTML = 'SYNCING...';
+
+            try {
+                const res = await fetch("/api/admin/add-chapter-question", {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert("DEPLOYED");
+                    location.reload();
+                } else {
+                    alert("Sync Error: " + data.message);
+                }
+            } catch (err) { alert("UPLINK_FAILURE"); }
+            finally { btn.disabled = false; btn.innerHTML = 'Deploy to Chapter Bank'; }
+        }
+
+        async function purgeQuestion(id) {
+            if (!confirm("PURGE_UNIT?")) return;
+            await fetch(`/api/admin/delete-chapter-question/${id}`, { method: "DELETE", headers: getAuthHeaders() });
+            refreshPreview();
+        }
+
+        refreshPreview();
+    </script>
+</body>
+</html>

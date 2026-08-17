@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocol Registration | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --electric-blue: #0066FF; --deep-purple: #6B2FFF; --cyber-cyan: #00F5FF;
+            --midnight: #0A0E27; --pure-white: #FFFFFF; --light-bg: #f4f7fe; 
+            --text-dark: #1e293b; --silver: #64748b; --font-display: 'Sora', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: var(--font-display); 
+            background-color: var(--light-bg); 
+            color: var(--text-dark); 
+            min-height: 100vh; 
+            display: flex; flex-direction: column; overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(20px);
+            padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+
+        .nav-container { width: 100%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, var(--electric-blue), var(--cyber-cyan)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .nav-links { display: flex; align-items: center; gap: 25px; }
+        .nav-links a { color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-links a:hover { color: var(--cyber-cyan); }
+
+        .register-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 110px 20px 60px; }
+        .auth-card { background: var(--pure-white); width: 100%; max-width: 480px; padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08); border: 1px solid #e2e8f0; text-align: center; }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--electric-blue); font-weight: 700; margin-bottom: 8px; }
+        input, select { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #f8fafc; font-size: 14px; outline: none; transition: 0.3s; font-family: inherit;}
+        input:focus, select:focus { background: #fff; border-color: var(--electric-blue); box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1); transform: translateY(-1px); }
+
+        .register-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: #fff; border: none; border-radius: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2); margin-top: 10px; }
+        .register-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(107, 47, 255, 0.3); }
+        .register-btn:disabled { opacity: 0.7; cursor: not-allowed; filter: grayscale(0.5); }
+
+        .footer { background: var(--midnight); color: #fff; padding: 25px 20px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="nav-container">
+        <a href="index.html" class="logo">TestSeries</a>
+        <nav class="nav-links">
+            <a href="login.html">Login</a>
+            <a href="aboutus.html">About</a>
+        </nav>
+    </div>
+</header>
+
+<main class="register-container">
+    <div class="auth-card">
+        <h2>Register Protocol</h2>
+        <p>Initialize Neural Learning Account</p>
+        
+        <div class="input-group">
+            <label>Full Name</label>
+            <input id="name" placeholder="John Doe">
+        </div>
+        
+        <div class="input-group">
+            <label>Mobile Sync</label>
+            <input id="mobile" placeholder="10-digit number" maxlength="10">
+        </div>
+        
+        <div class="input-group">
+            <label>Neural Link (Email)</label>
+            <input id="email" type="email" placeholder="name@example.com">
+        </div>
+        
+        <div class="input-group">
+            <label>Access Key (Password)</label>
+            <input id="password" type="password" placeholder="Min. 8 characters">
+        </div>
+        
+        <div class="input-group">
+            <label>Authorized Role</label>
+            <select id="role">
+                <option value="student">Student</option>
+                <option value="institute">Institute / Teacher</option>
+            </select>
+        </div>
+
+        <div class="input-group" id="custom-id-group" style="display: none;">
+            <label>Create Unique Institute ID</label>
+            <input id="custom_institute_id" style="background:#fdf2ff; border-color:var(--deep-purple); font-weight:800;" placeholder="e.g. EXCEL2026">
+        </div>
+
+        <div class="input-group" id="institute-link-group">
+            <label>Link to Institute ID (Optional)</label>
+            <input id="institute_id" placeholder="e.g. INS001">
+        </div>
+
+        <button id="registerBtn" class="register-btn">Initialize Registration</button>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>© 2026 ReadyHand AI Technology & Infynex Groups. All Rights Reserved.</p>
+</footer>
+
+<script>
+    const roleSelect = document.getElementById("role");
+    const customIdGroup = document.getElementById("custom-id-group");
+    const instituteLinkGroup = document.getElementById("institute-link-group");
+
+    // Toggle logic for roles
+    roleSelect.addEventListener("change", function() {
+        if (this.value === "student") {
+            instituteLinkGroup.style.display = "block";
+            customIdGroup.style.display = "none";
+        } else {
+            instituteLinkGroup.style.display = "none";
+            customIdGroup.style.display = "block";
+        }
+    });
+
+    // Registration Handler
+    document.getElementById("registerBtn").addEventListener("click", async function() {
+        const name = document.getElementById("name").value.trim();
+        const mobile = document.getElementById("mobile").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const institute_id = document.getElementById("institute_id").value.trim();
+        const custom_institute_id = document.getElementById("custom_institute_id").value.trim();
+        let role = roleSelect.value === "institute" ? "teacher" : "student";
+
+        if (!name || !mobile || !email || !password) {
+            return alert("All primary fields are required.");
+        }
+
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uplinking...';
+
+        try {
+            // Direct path used here. Ensure your server handles /api/auth/register
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    full_name: name, 
+                    email, 
+                    mobile_no: mobile, 
+                    password, 
+                    role,
+                    institute_id: role === "student" ? institute_id : null,
+                    custom_institute_id: role === "teacher" ? custom_institute_id : null
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`Success! Access Granted to: ${data.userId || "Your Account"}`);
+                window.location.href = "login.html";
+            } else {
+                alert(`Error: ${data.message}`);
+                btn.disabled = false;
+                btn.innerText = 'Initialize Registration';
+            }
+        } catch (e) {
+            alert("Uplink Failure: Server could not be reached.");
+            btn.disabled = false;
+            btn.innerText = 'Initialize Registration';
+        }
+    });
+</script>
+</body>
+</html>

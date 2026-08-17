@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Explorer | Elite Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --electric-blue: #0066FF; --midnight: #0A0E27; --cyber-cyan: #00F5FF;
+            --neon-green: #00FF88; --light-bg: #f4f7fe; --silver: #64748b;
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--light-bg); margin: 0; padding-top: 110px; min-height: 100vh; }
+
+        /* Standalone Header */
+        .standalone-header {
+            position: fixed; top: 0; width: 100%; height: 75px;
+            background: #fff; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; padding: 0 40px;
+            justify-content: space-between; z-index: 1000;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 30px 150px; }
+
+        /* --- Header Hub --- */
+        .hub-header {
+            background: #fff; padding: 30px; border-radius: 24px; border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+        }
+
+        .filter-group { display: flex; gap: 15px; flex-wrap: wrap; }
+        select, input[type="text"] {
+            padding: 12px 18px; border-radius: 12px; border: 1.5px solid #f1f5f9;
+            font-family: 'Space Mono'; font-size: 13px; outline: none; transition: 0.3s; background: #f8fafc;
+        }
+        input[type="text"]:focus { border-color: var(--electric-blue); background: #fff; }
+
+        /* --- Question Cards --- */
+        .q-bank-item {
+            background: #fff; border-radius: 24px; padding: 30px; margin-bottom: 20px;
+            border: 1px solid #e2e8f0; transition: 0.3s; display: flex; gap: 25px;
+            position: relative;
+        }
+        .q-bank-item:hover { border-color: var(--electric-blue); transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,102,255,0.05); }
+
+        /* Checkbox UI */
+        .select-area { display: flex; align-items: flex-start; padding-top: 5px; }
+        .checkbox-wrapper { cursor: pointer; display: block; position: relative; width: 24px; height: 24px; }
+        .checkbox-wrapper input { opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .checkmark {
+            position: absolute; top: 0; left: 0; height: 24px; width: 24px;
+            background-color: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px;
+        }
+        .checkbox-wrapper input:checked ~ .checkmark { background-color: var(--electric-blue); border-color: var(--electric-blue); }
+        .checkmark:after { content: ""; position: absolute; display: none; left: 8px; top: 4px; width: 5px; height: 10px; border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+        .checkbox-wrapper input:checked ~ .checkmark:after { display: block; }
+
+        .q-content { flex: 1; }
+        .q-header { display: flex; justify-content: space-between; margin-bottom: 18px; align-items: center; }
+        .q-text { font-size: 17px; font-weight: 800; color: var(--midnight); line-height: 1.6; margin-bottom: 20px; display: block; }
+        
+        /* Question Media */
+        .q-image-preview { max-width: 400px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: block; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .opt-item { 
+            font-size: 13px; padding: 12px 18px; border-radius: 12px; background: #f8fafc; 
+            border: 1px solid #e2e8f0; color: var(--silver); display: flex; align-items: center; gap: 10px;
+        }
+        .opt-item.is-correct { 
+            background: #f0fdf4; border-color: #86efac; color: #166534; font-weight: 800;
+        }
+        .correct-badge { background: var(--neon-green); color: var(--midnight); font-size: 9px; padding: 3px 8px; border-radius: 5px; font-family: 'Space Mono'; }
+
+        .tag { font-family: 'Space Mono'; font-size: 10px; font-weight: 800; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; }
+        .tag-chapter { background: #eef2ff; color: #4338ca; }
+        .tag-subject { background: #f0fdf4; color: #166534; }
+
+        /* --- Deployment Bar --- */
+        .sync-bar {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 60px); max-width: 1100px; background: var(--midnight);
+            padding: 22px 45px; border-radius: 24px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); z-index: 1000;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .sync-info { color: #fff; font-family: 'Space Mono'; font-size: 14px; letter-spacing: 1px; }
+        .btn-deploy {
+            background: var(--neon-green); color: var(--midnight); padding: 14px 35px;
+            border-radius: 14px; font-weight: 800; border: none; cursor: pointer;
+            font-family: 'Space Mono'; text-transform: uppercase; transition: 0.3s;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .btn-deploy:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn-deploy:disabled { background: var(--silver); cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<header class="standalone-header">
+    <div style="font-weight: 800; font-size: 20px; color: var(--electric-blue);">ELITE_HUB <span style="color: var(--midnight); font-weight: 400;">| EXPLORER</span></div>
+    <button onclick="window.history.back()" style="background: none; border: none; font-family: 'Space Mono'; color: var(--silver); cursor: pointer; font-size: 12px;">
+        <i class="fas fa-arrow-left"></i> EXIT_TO_TEST
+    </button>
+</header>
+
+<main class="container">
+    <div class="hub-header">
+        <div>
+            <h2 style="font-size: 26px; font-weight: 800; margin: 0;">Global Question Bank</h2>
+            <p style="font-size: 10px; font-family: 'Space Mono'; color: var(--silver); margin-top: 5px;">CROSS-CHAPTER UNIT DEPLOYMENT SYSTEM</p>
+        </div>
+        
+        <div class="filter-group">
+            <input type="text" id="searchQ" placeholder="Search content..." oninput="filterLocal()">
+            <select id="filterSubject" onchange="filterLocal()">
+                <option value="">All Subjects</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Maths">Maths</option>
+                <option value="Biology">Biology</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="loadingState" style="text-align:center; padding: 50px; color: var(--silver); font-family: 'Space Mono';">
+        <i class="fas fa-circle-notch fa-spin"></i> ACCESSING_SECURE_VAULT...
+    </div>
+
+    <div id="bankList"></div>
+</main>
+
+<div class="sync-bar">
+    <div class="sync-info">
+        <i class="fas fa-microchip" style="color: var(--cyber-cyan); margin-right: 10px;"></i>
+        <span id="selectedCount" style="color: var(--neon-green); font-weight: 800;">0</span> UNITS READY FOR UPLINK
+    </div>
+    <button class="btn-deploy" id="deployBtn" onclick="initializeSync()">
+        <i class="fas fa-cloud-upload-alt"></i> SYNC_TO_TEST
+    </button>
+</div>
+
+<script>
+    // --- STANDALONE CONFIGURATION ---
+    const BASE_URL = ""; // Change if API is on a different subdomain
+    const token = localStorage.getItem("token");
+    const params = new URLSearchParams(window.location.search);
+    const examId = params.get("examId");
+
+    let allQuestions = [];
+
+    if (!token || !examId) {
+        alert("Session Expired or Test Context Missing.");
+        window.location.href = "my-tests.html";
+    }
+
+    async function loadBank() {
+        try {
+            const res = await fetch(BASE_URL + '/api/teacher/global-bank', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            document.getElementById("loadingState").style.display = "none";
+
+            if (data.success) {
+                allQuestions = data.questions;
+                renderQuestions(allQuestions);
+            }
+        } catch (err) { 
+            document.getElementById("loadingState").innerHTML = `<span style="color:red">UPLINK_FAILURE: DATABASE_OFFLINE</span>`;
+        }
+    }
+
+    function renderQuestions(list) {
+        const container = document.getElementById("bankList");
+        if (list.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding: 80px; color: var(--silver); font-family: 'Space Mono';">NO_BANK_RECORDS_MATCH_FILTER</div>`;
+            return;
+        }
+
+        container.innerHTML = list.map(q => {
+            const isA = q.correct_option === 'A';
+            const isB = q.correct_option === 'B';
+            const isC = q.correct_option === 'C';
+            const isD = q.correct_option === 'D';
+
+            return `
+            <div class="q-bank-item">
+                <div class="select-area">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" class="q-check" value="${q.id}" onchange="updateCounter()">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="q-content">
+                    <div class="q-header">
+                        <div style="display:flex; gap:10px;">
+                            <span class="tag tag-subject">${q.subject_name || 'Mixed'}</span>
+                            <span class="tag tag-chapter">${q.chapter_name || 'General'}</span>
+                        </div>
+                        <span style="font-family:'Space Mono'; font-size:10px; color:var(--silver);">UID: #${q.id} | ${q.q_type.toUpperCase()}</span>
+                    </div>
+
+                    <span class="q-text">${q.question_text}</span>
+
+                    ${q.image_url ? `<img src="${q.image_url}" class="q-image-preview" alt="Diagram">` : ''}
+
+                    <div class="options-grid">
+                        <div class="opt-item ${isA ? 'is-correct' : ''}"><b>A</b> <span>${q.option_a}</span> ${isA ? '<span class="correct-badge">CORRECT</span>' : ''}</div>
+                        <div class="opt-item ${isB ? 'is-correct' : ''}"><b>B</b> <span>${q.option_b}</span> ${isB ? '<span class="correct-badge">CORRECT</span>' : ''}</div>
+                        <div class="opt-item ${isC ? 'is-correct' : ''}"><b>C</b> <span>${q.option_c}</span> ${isC ? '<span class="correct-badge">CORRECT</span>' : ''}</div>
+                        <div class="opt-item ${isD ? 'is-correct' : ''}"><b>D</b> <span>${q.option_d}</span> ${isD ? '<span class="correct-badge">CORRECT</span>' : ''}</div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+
+        // Trigger MathJax to render formulas in the new cards
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function filterLocal() {
+        const query = document.getElementById("searchQ").value.toLowerCase();
+        const sub = document.getElementById("filterSubject").value;
+        const filtered = allQuestions.filter(q => {
+            const matchSearch = q.question_text.toLowerCase().includes(query) || 
+                               (q.chapter_name && q.chapter_name.toLowerCase().includes(query));
+            const matchSub = sub === "" || q.subject_name === sub;
+            return matchSearch && matchSub;
+        });
+        renderQuestions(filtered);
+    }
+
+    function updateCounter() {
+        const count = document.querySelectorAll(".q-check:checked").length;
+        document.getElementById("selectedCount").innerText = count;
+    }
+
+    async function initializeSync() {
+        const selected = Array.from(document.querySelectorAll(".q-check:checked")).map(cb => cb.value);
+        if (selected.length === 0) return alert("Select at least one intelligence unit.");
+
+        const btn = document.getElementById("deployBtn");
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> EXECUTING_SYNC...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(BASE_URL + '/api/teacher/import-from-bank', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ examId: examId, selectedQuestionIds: selected })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("SUCCESS: " + data.message);
+                window.location.href = `view-questions.html?id=${examId}`;
+            }
+        } catch (err) { 
+            alert("Transmission Error. Check connectivity."); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> SYNC_TO_TEST'; 
+        }
+    }
+
+    // Initial Load
+    window.onload = loadBank;
+</script>
+</body>
+</html>

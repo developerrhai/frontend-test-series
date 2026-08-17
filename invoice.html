@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GST Invoice | TestSeries</title>
+<link rel="stylesheet" href="invoice.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">TestSeries</div>
+  <div class="status success">Payment Successful</div>
+</header>
+
+<section class="dashboard">
+  <div class="card invoice-card">
+
+    <h2>GST Tax Invoice</h2>
+
+    <div class="invoice-header">
+      <div>
+        <p><b>Company:</b> TestSeries Pvt Ltd</p>
+        <p><b>GSTIN:</b> 27ABCDE1234F1Z5</p>
+        <p><b>Address:</b> Maharashtra, India</p>
+      </div>
+
+      <div>
+        <p><b>Invoice No:</b> <span id="inv"></span></p>
+        <p><b>Date:</b> <span id="date"></span></p>
+        <p><b>Payment ID:</b> <span id="pid"></span></p>
+      </div>
+    </div>
+
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="plan"></td>
+          <td id="amount"></td>
+        </tr>
+        <tr>
+          <td>GST (18%)</td>
+          <td id="gst"></td>
+        </tr>
+        <tr class="total-row">
+          <td>Total Payable</td>
+          <td id="total"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="actions">
+      <button onclick="window.print()">Print Invoice</button>
+      <button class="secondary" onclick="downloadPDF()">Download PDF</button>
+      <a href="dashboard.html">Go to Dashboard</a>
+    </div>
+
+  </div>
+</section>
+
+<script>
+const invoice = JSON.parse(localStorage.getItem("latestInvoice"));
+
+if(!invoice){
+  alert("Invoice not found");
+  location.href="subscription.html";
+}
+
+document.getElementById("inv").innerText = invoice.invoiceNo;
+document.getElementById("pid").innerText = invoice.paymentId;
+document.getElementById("date").innerText = invoice.date;
+document.getElementById("plan").innerText = invoice.plan + " Subscription";
+document.getElementById("amount").innerText = invoice.amount;
+document.getElementById("gst").innerText = invoice.gst;
+document.getElementById("total").innerText = invoice.total;
+
+function downloadPDF(){
+  window.print(); // (Next step: jsPDF backend PDF)
+}
+</script>
+
+</body>
+</html>
+
+<style>*{
+  box-sizing:border-box;
+  font-family:Arial, sans-serif;
+}
+
+body{
+  margin:0;
+  background:#f4f6fb;
+  color:#1e293b;
+}
+
+.header{
+  background:#1e293b;
+  color:#fff;
+  padding:15px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.status.success{
+  background:#22c55e;
+  padding:6px 12px;
+  border-radius:6px;
+  font-size:13px;
+}
+
+.dashboard{
+  max-width:900px;
+  margin:40px auto;
+  padding:0 20px;
+}
+
+.card{
+  background:#fff;
+  padding:30px;
+  border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+.invoice-card h2{
+  text-align:center;
+  margin-bottom:25px;
+  color:#1e40af;
+}
+
+.invoice-header{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:20px;
+  font-size:14px;
+}
+
+.invoice-header p{
+  margin:4px 0;
+}
+
+.invoice-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+
+.invoice-table th,
+.invoice-table td{
+  border:1px solid #e5e7eb;
+  padding:12px;
+  text-align:right;
+}
+
+.invoice-table th:first-child,
+.invoice-table td:first-child{
+  text-align:left;
+}
+
+.invoice-table th{
+  background:#f1f5f9;
+}
+
+.total-row td{
+  font-weight:bold;
+  background:#f8fafc;
+}
+
+.actions{
+  margin-top:25px;
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+button{
+  padding:10px 18px;
+  border:none;
+  background:#2563eb;
+  color:#fff;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+button.secondary{
+  background:#16a34a;
+}
+
+button:hover{
+  opacity:0.9;
+}
+
+.actions a{
+  margin-left:auto;
+  text-decoration:none;
+  font-weight:bold;
+  color:#2563eb;
+}
+
+/* PRINT */
+@media print{
+  .header,.actions,a{display:none}
+  body{background:#fff}
+}
+</style>

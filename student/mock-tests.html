@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Tests | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;800&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-list-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .exam-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .exam-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 102, 255, 0.1);
+            border-color: var(--electric-blue);
+        }
+    </style>
+</head>
+<body>
+
+
+<main class="dashboard-container">
+    <div class="test-list-container">
+        <h2 style="color: black; margin-bottom: 40px; font-weight: 800; text-align: center;">Available Examinations</h2>
+        
+        <div id="mockList">
+            <p style="text-align: center; color: var(--silver);">Establishing Secure Link...</p>
+        </div>
+    </div>
+</main>
+
+<script src="layout.js"></script>
+<script>
+async function loadMocks() {
+    const token = localStorage.getItem("token");
+    if (!token) { location.href = "../login.html"; return; }
+
+    try {
+        const res = await fetch('/api/student/available-mocks', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const box = document.getElementById("mockList");
+        box.innerHTML = "";
+
+        if (data.exams && data.exams.length > 0) {
+            data.exams.forEach(t => {
+                box.innerHTML += `
+                    <div class="exam-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h3 style="color: #1e3a8a; margin-bottom: 8px; font-weight: 800;">${t.title}</h3>
+                                <p style="font-family: var(--font-mono); font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                                    Protocol: ${t.series || 'Elite Series 2026'}
+                                </p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-family: var(--font-mono);">Duration</span>
+                                <h3 style="margin: 0; color: #1e293b;">${t.duration} MINS</h3>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 25px 0; color: #64748b; font-size: 14px; font-weight: 500;">
+                            <span>📝 ${t.total_questions || 0} Total Questions</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                            <span style="color: var(--electric-blue); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Elite Access</span>
+                            <button id="btn-${t.id}" onclick="startExam('${t.id}')" 
+                                    style="background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: white; border: none; padding: 12px 28px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.2);">
+                                Start Examination
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            box.innerHTML = "<p style='text-align: center; color: #64748b;'>No examinations currently available.</p>";
+        }
+    } catch (err) { 
+        console.error(err);
+        document.getElementById("mockList").innerHTML = "<p style='color: red; text-align: center;'>Connection Error.</p>";
+    }
+}
+
+/* ================= THE FIXED NAVIGATION LOGIC ================= */
+async function startExam(id) {
+    const token = localStorage.getItem("token");
+    const btn = document.getElementById(`btn-${id}`);
+    
+    // UI Feedback
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "Initializing...";
+
+    try {
+        // MATCHED: This now points exactly to your backend route:
+        // router.get('/get-exam-details/:examId', ...)
+        const res = await fetch(`/api/student/get-exam-details/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await res.json();
+
+        if (data.success) {
+            // CRITICAL: We save the exam data here. 
+            // If we don't, exam.html will redirect to tests.html because its 'exam' variable is empty.
+            localStorage.setItem("currentExam", JSON.stringify(data.test || data.exam));
+            
+            // Proceed to the exam environment
+            window.location.href = `exam-permission.html?id=${id}`;
+        } else {
+            alert("Protocol Access Denied: " + data.message);
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
+    } catch (err) {
+        console.error("Transmission Error:", err);
+        alert("Neural Uplink Error: Check server connection.");
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
+
+loadMocks();
+</script>
+</body>
+</html>

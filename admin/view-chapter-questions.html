@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter Audit | Elite Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --electric-blue: #0066FF; --midnight: #0A0E27; --cyber-cyan: #00F5FF;
+            --light-bg: #f4f7fe; --silver: #64748b; --danger: #ef4444;
+            --warning: #f59e0b; --neon-green: #00FF88;
+        }
+
+        body { font-family: 'Sora', sans-serif; background: var(--light-bg); padding-top: 100px; min-height: 100vh; color: var(--midnight); }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        /* --- MINI NAV --- */
+        .mini-header {
+            position: fixed; top: 0; width: 100%; background: var(--midnight); 
+            padding: 15px 40px; display: flex; justify-content: space-between; 
+            align-items: center; z-index: 1000; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .back-link { color: #fff; text-decoration: none; font-size: 11px; font-weight: 700; font-family: 'Space Mono'; display: flex; align-items: center; gap: 8px; }
+
+        /* --- STATS BAR --- */
+        .stats-bar {
+            background: #fff; padding: 15px 25px; border-radius: 15px; margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .stats-text { font-family: 'Space Mono'; font-size: 12px; font-weight: 700; color: var(--silver); }
+
+        /* --- QUESTION CARDS --- */
+        .audit-card {
+            background: #fff; padding: 30px; border-radius: 24px; margin-bottom: 25px;
+            border: 1px solid #e2e8f0; position: relative; transition: 0.3s;
+        }
+        .audit-card:hover { border-color: var(--electric-blue); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); }
+
+        .q-meta { font-family: 'Space Mono'; font-size: 10px; color: var(--silver); margin-bottom: 12px; display: flex; gap: 15px; }
+        .q-text { font-size: 16px; font-weight: 700; color: var(--midnight); margin-bottom: 20px; line-height: 1.6; }
+
+        .options-audit { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .opt-item { padding: 12px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 13px; color: var(--midnight); }
+        .opt-item.correct { background: rgba(0, 255, 136, 0.1); border-color: var(--neon-green); color: #065f46; font-weight: 800; }
+
+        .explanation-audit { margin-top: 15px; padding: 15px; background: #fffdf5; border-left: 4px solid var(--warning); border-radius: 8px; font-size: 13px; line-height: 1.5; color: #92400e; }
+        .explanation-audit b { font-family: 'Space Mono'; font-size: 11px; display: block; margin-bottom: 5px; color: var(--warning); }
+
+        .delete-btn {
+            position: absolute; top: 30px; right: 30px; color: var(--danger); 
+            cursor: pointer; font-size: 18px; transition: 0.2s; background: #fee2e2;
+            width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px;
+        }
+        .delete-btn:hover { background: var(--danger); color: white; transform: scale(1.1); }
+
+        .empty-state { text-align: center; padding: 100px 0; color: var(--silver); font-family: 'Space Mono'; }
+    </style>
+</head>
+
+<body>
+
+    <header class="mini-header">
+        <a href="view-question-bank.html" class="back-link"><i class="fas fa-arrow-left"></i> REPOSITORY HUB</a>
+        <div id="chapterTitleDisplay" style="color:var(--cyber-cyan); font-family:'Space Mono'; font-size:12px; font-weight:700;">AUDIT_MODE: POLLING...</div>
+    </header>
+
+    <main class="container">
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-weight: 800; font-size: 28px; color: var(--midnight);">Chapter Bank Audit</h2>
+            <p style="font-size: 11px; color: var(--silver); font-family: 'Space Mono'; text-transform: uppercase;">Reviewing individual chapter units</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats-text" id="subTitle">SYNCING_TO_DATABASE...</div>
+            <button class="back-link" style="color:var(--electric-blue); cursor:pointer; background:none; border:none;" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i> REFRESH_STREAM
+            </button>
+        </div>
+
+        <div id="questionsContainer"></div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem("token");
+        const params = new URLSearchParams(window.location.search);
+        const chapterId = params.get("chapterId");
+
+        if (!token || !chapterId) window.location.href = "view-question-bank.html";
+
+        async function loadAudit() {
+            try {
+                document.getElementById("chapterTitleDisplay").innerText = "AUDITING_CHAPTER: #" + chapterId;
+                fetchChapterQuestions();
+            } catch (e) { console.error("Handshake Failure."); }
+        }
+
+        /* ✅ STANDALONE FETCH: Using root-relative paths for Webuzo Proxy */
+        async function fetchChapterQuestions() {
+            const container = document.getElementById("questionsContainer");
+            try {
+                const res = await fetch(`/api/admin/get-chapter-questions/${chapterId}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (data.success && data.questions.length > 0) {
+                    document.getElementById("subTitle").innerText = `CHAPTER_ID: ${chapterId} | UNITS_FOUND: ${data.questions.length}`;
+                    renderList(data.questions);
+                } else {
+                    container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open" style="font-size: 40px; margin-bottom: 15px;"></i>
+                        <p>No questions found in this chapter bank.</p>
+                        <button class="back-link" style="color:var(--electric-blue); margin: 20px auto; background:none; border:1px solid var(--electric-blue); padding:10px 20px; border-radius:8px; cursor:pointer;" onclick="location.href='add-chapter-questions.html?chapterId=${chapterId}'">
+                           + ADD_FIRST_UNIT
+                        </button>
+                    </div>`;
+                    document.getElementById("subTitle").innerText = "CHAPTER_ID: " + chapterId + " | UNITS: 0";
+                }
+            } catch (err) { container.innerHTML = '<p style="color:red; text-align:center;">Neural Link Error (Route or DB Offline).</p>'; }
+        }
+
+        function renderList(questions) {
+            const container = document.getElementById("questionsContainer");
+            container.innerHTML = questions.map((q, i) => `
+            <div class="audit-card">
+                <div class="q-meta">
+                    <span>UNIT_POS: ${i + 1}</span>
+                    <span>TYPE: ${q.q_type.toUpperCase()}</span>
+                    <span>DB_ID: ${q.id}</span>
+                </div>
+                <div class="q-text">${q.question_text}</div>
+                
+                ${q.image_url ? `<img src="${q.image_url}" style="max-width:100%; border-radius:15px; margin-bottom:20px; border:1px solid #eee;">` : ''}
+
+                <div class="options-audit">
+                    <div class="opt-item ${q.correct_option === 'A' || q.correct_option.includes('A') ? 'correct' : ''}">A: ${q.option_a || '---'}</div>
+                    <div class="opt-item ${q.correct_option === 'B' || q.correct_option.includes('B') ? 'correct' : ''}">B: ${q.option_b || '---'}</div>
+                    <div class="opt-item ${q.correct_option === 'C' || q.correct_option.includes('C') ? 'correct' : ''}">C: ${q.option_c || '---'}</div>
+                    <div class="opt-item ${q.correct_option === 'D' || q.correct_option.includes('D') ? 'correct' : ''}">D: ${q.option_d || '---'}</div>
+                </div>
+
+                ${q.explanation ? `
+                    <div class="explanation-audit">
+                        <b><i class="fas fa-lightbulb"></i> SOLUTION_STRATEGY</b>
+                        ${q.explanation}
+                    </div>
+                ` : '<div style="color:red; font-size:10px; font-weight:bold; margin-top:10px;">⚠️ NO_LOGIC_SYNCED</div>'}
+
+                <div class="delete-btn" onclick="deleteUnit('${q.id}')" title="Purge Unit">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+            </div>
+        `).join('');
+        }
+
+        /* ✅ STANDALONE DELETE: Root-relative path */
+        async function deleteUnit(id) {
+            if (!confirm("Confirm permanent purge of this chapter unit?")) return;
+
+            try {
+                const res = await fetch(`/api/admin/delete-chapter-question/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) fetchChapterQuestions();
+                else alert("Deletion denied by server.");
+            } catch (e) { alert("Purge Protocol Failure."); }
+        }
+
+        loadAudit();
+    </script>
+</body>
+
+</html>

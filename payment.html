@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment | TestSeries</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f6fb;
+  margin:0;
+}
+.header{
+  background:#1e293b;
+  color:#fff;
+  padding:15px 30px;
+  display:flex;
+  justify-content:space-between;
+}
+.container{
+  max-width:520px;
+  background:#fff;
+  margin:40px auto;
+  padding:25px;
+  border-radius:8px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+h2{text-align:center;margin-bottom:10px}
+.plan{
+  background:#f1f5f9;
+  padding:15px;
+  border-radius:6px;
+  margin-bottom:20px;
+}
+.plan p{margin:6px 0}
+.pay-btn{
+  width:100%;
+  padding:12px;
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  font-size:16px;
+  cursor:pointer;
+  border-radius:6px;
+}
+.pay-btn:hover{background:#1d4ed8}
+.note{
+  text-align:center;
+  font-size:13px;
+  margin-top:10px;
+  color:#555;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>TestSeries</div>
+  <div id="userRole"></div>
+</div>
+
+<div class="container">
+  <h2>Complete Payment</h2>
+
+  <div class="plan" id="planDetails"></div>
+
+  <button class="pay-btn" onclick="makePayment()">Pay Now</button>
+
+  <p class="note">Secure payment via Razorpay / Stripe</p>
+</div>
+
+<script>
+// ===== AUTH CHECK =====
+let user = JSON.parse(localStorage.getItem("currentUser"));
+let plan = JSON.parse(localStorage.getItem("selectedPlan"));
+
+if(!user || !plan){
+  alert("Invalid payment access");
+  location.href="subscription.html";
+}
+
+document.getElementById("userRole").innerText = user.role.toUpperCase();
+
+// ===== PLAN UI =====
+document.getElementById("planDetails").innerHTML = `
+  <p><b>Plan:</b> ${plan.name}</p>
+  <p><b>For:</b> ${user.role}</p>
+  <p><b>Duration:</b> ${plan.duration}</p>
+  <p><b>Amount:</b> ₹${plan.amount}</p>
+  <p><b>GST (18%):</b> ₹${(plan.amount*0.18).toFixed(2)}</p>
+  <p><b>Total Payable:</b> ₹${(plan.amount*1.18).toFixed(2)}</p>
+`;
+
+// ===== PAYMENT SIMULATION =====
+function makePayment(){
+  // 🔹 Simulate Razorpay success
+  let paymentId = "PAY_" + Date.now();
+
+  let invoice = {
+    invoiceNo: "INV-"+Date.now(),
+    paymentId,
+    user: user.email,
+    role: user.role,
+    plan: plan.name,
+    amount: plan.amount,
+    gst: (plan.amount*0.18).toFixed(2),
+    total: (plan.amount*1.18).toFixed(2),
+    date: new Date().toLocaleDateString()
+  };
+
+  // Save invoice
+  localStorage.setItem("latestInvoice", JSON.stringify(invoice));
+
+  // Update subscription
+  user.subscription = plan.name;
+  user.subscriptionActive = true;
+  localStorage.setItem("currentUser", JSON.stringify(user));
+
+  setTimeout(()=>{
+    alert("Payment Successful!");
+    location.href="invoice.html";
+  },1000);
+}
+</script>
+
+</body>
+</html>

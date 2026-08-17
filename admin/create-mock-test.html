@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Create Mock Test</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<script>
+</script>
+
+<div id="header"></div>
+
+<div class="container"> 
+<h1>Create Mock Test</h1>
+
+<div class="card">
+  <input id="title" placeholder="Test Title" style="width:100%;padding:10px"><br><br>
+
+  <select id="series" style="width:100%;padding:10px">
+    <option>JEE Main</option>
+    <option>JEE Advanced</option>
+    <option>NEET</option>
+  </select><br><br>
+
+  <input type="number" id="duration" placeholder="Duration (minutes)" style="width:100%;padding:10px"><br><br>
+
+  <select id="subjectType" style="width:100%;padding:10px">
+    <option>Physics</option>
+    <option>Chemistry</option>
+    <option>Maths</option>
+    <option>Biology</option>
+    <option>Mixed</option>
+  </select><br><br>
+
+  <button class="blue" onclick="create()">Create Test</button>
+</div>
+</div>
+
+<script>
+/* ===== AUTH & HEADER ===== */
+const token = localStorage.getItem("token");
+
+// Redirect if not logged in
+if (!token) {
+    location.href = "../login.html";
+}
+
+fetch("admin-header.html")
+    .then(r => r.text())
+    .then(t => document.getElementById("header").innerHTML = t);
+
+/* ===== CREATE TEST (BACKEND INTEGRATION) ===== */
+async function create() {
+    const titleVal = document.getElementById("title").value;
+    const seriesVal = document.getElementById("series").value;
+    const durationVal = document.getElementById("duration").value;
+    const subjectVal = document.getElementById("subjectType").value;
+
+    // Simple validation
+    if (!titleVal || !durationVal) {
+        alert("Please fill in the title and duration.");
+        return;
+    }
+
+    const payload = {
+        examId: "MOCK-" + Date.now(),
+        title: titleVal,
+        series: seriesVal,
+        duration: parseInt(durationVal),
+        subject: subjectVal
+    };
+
+    try {
+        const response = await fetch('/api/admin/create-mock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert("Mock Test Created Successfully!");
+            location.href = "my-tests.html";
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        alert("Failed to connect to server.");
+    }
+}
+</script>
+</body>
+</html>

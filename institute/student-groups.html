@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Intelligence | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .dashboard-wrapper {
+            padding: 40px 0 100px;
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 30px;
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        /* --- Elite Input Refinement --- */
+        .info-row { margin-bottom: 25px; }
+        .info-row label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--electric-blue);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px 20px; /* Enhanced Padding */
+            border-radius: 14px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-dark);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        input:focus {
+            background: #fff;
+            border-color: var(--electric-blue);
+            box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1), 0 10px 20px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        /* --- Batch Creation Card --- */
+        .batch-creation-card {
+            background: #fff;
+            padding: 35px;
+            border-radius: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Tactical Alignment for "Initialize" Button */
+        .creation-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        /* --- Individual Group Cards --- */
+        .batch-individual-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .batch-individual-card.active {
+            border-left: 6px solid var(--electric-blue);
+            background: #f0f7ff;
+            box-shadow: 0 15px 35px rgba(0, 102, 255, 0.1);
+        }
+
+        /* --- Open Discussion Button (Reduced Length) --- */
+        .btn-chat-open {
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 24px; /* Fixed padding instead of 100% width */
+            border-radius: 10px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-chat-open:hover {
+            background: var(--electric-blue);
+            transform: translateX(5px);
+        }
+
+        /* --- Chat Sidebar --- */
+        .chat-elite-window {
+            background: #fff;
+            height: calc(100vh - 180px);
+            min-height: 650px;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            position: sticky;
+            top: 120px;
+        }
+
+        .msg { padding: 12px 18px; border-radius: 18px; max-width: 85%; font-size: 14px; margin-bottom: 5px; }
+        .msg.mine { align-self: flex-end; background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: white; border-bottom-right-radius: 4px; }
+        .msg.others { align-self: flex-start; background: white; border: 1px solid #e2e8f0; border-bottom-left-radius: 4px; }
+
+        @media (max-width: 1024px) {
+            .dashboard-wrapper { grid-template-columns: 1fr; }
+            .btn-chat-open { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<main class="dashboard-wrapper">
+    <section>
+        <div class="batch-creation-card">
+            <div style="margin-bottom: 30px;">
+                <h2 style="color: #1e3a8a; font-weight: 800; margin: 0;">Batch Intelligence</h2>
+                <p style="font-family: var(--font-mono); font-size: 11px; color: var(--silver); text-transform: uppercase; letter-spacing: 1px;">Initialize Neural Learning Groups</p>
+            </div>
+            
+            <div class="info-row">
+                <label>Operational Group Designation</label>
+                <input id="groupName" placeholder="e.g. JEE Advanced 2026 - Alpha">
+            </div>
+            <div class="info-row">
+                <label>Member Injection Protocol (Emails)</label>
+                <input id="studentEmails" placeholder="student1@gmail.com, student2@gmail.com">
+            </div>
+            
+            <div class="creation-footer">
+                <button class="sync-btn" onclick="createGroup()" style="padding: 18px 40px;">
+                    <i class="fas fa-plus-circle"></i> Initialize Group
+                </button>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 25px; font-weight: 800; color: #1e293b; padding-left: 10px;">
+            <i class="fas fa-satellite"></i> Active Command Batches
+        </h3>
+        <div id="groupList">
+            </div>
+    </section>
+
+    <aside class="chat-elite-window">
+        <div class="chat-header" style="padding: 20px 25px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+            <span id="activeGroupName" style="font-weight: 800; color: #1e3a8a;">Select Channel</span>
+            <i class="fas fa-terminal" style="color: var(--electric-blue);"></i>
+        </div>
+        <div id="chatMessages" class="chat-messages" style="flex:1; padding:25px; overflow-y:auto; background:#f8fafc; display:flex; flex-direction:column; gap:15px;">
+            <p style="text-align:center; font-family:var(--font-mono); opacity:0.4; margin-top:200px;">Waiting for batch link...</p>
+        </div>
+        <div class="chat-input-area" style="padding:20px; background:#fff; display:flex; gap:10px; border-radius: 0 0 24px 24px;">
+            <input type="text" id="messageInput" placeholder="Secure packet transmission..." style="border-radius: 30px;" onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="sync-btn" style="padding: 0 25px; border-radius: 30px;" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </aside>
+</main>
+<div id="editModal" class="modal-backdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.8); backdrop-filter:blur(8px); z-index:1000; align-items:center; justify-content:center;">
+    <div class="batch-creation-card" style="width:100%; max-width:500px; position:relative;">
+        <button onclick="closeEditModal()" style="position:absolute; top:20px; right:20px; border:none; background:none; cursor:pointer; color:var(--silver); font-size:20px;"><i class="fas fa-times"></i></button>
+        
+        <div style="margin-bottom: 25px;">
+            <h2 style="color: #1e3a8a; font-weight: 800; margin: 0;">Member Injection</h2>
+            <p style="font-family: var(--font-mono); font-size: 11px; color: var(--electric-blue); text-transform: uppercase; letter-spacing: 1px;">Adding protocol to: <span id="modalGroupName">---</span></p>
+        </div>
+
+        <div class="info-row">
+            <label>Student Email Address</label>
+            <input type="email" id="newStudentEmail" placeholder="candidate@university.com">
+        </div>
+
+        <div class="creation-footer">
+            <button class="sync-btn" onclick="addMemberToGroup()" style="padding: 15px 30px; width: 100%; justify-content: center;">
+                <i class="fas fa-user-plus"></i> Authorize Access
+            </button>
+        </div>
+    </div>
+</div>
+<script src="layout.js"></script>
+
+<script>
+
+
+/* ================= SYSTEM LOGIC ================= */
+
+const token = localStorage.getItem("token");
+let activeGroupId = null;
+let currentTeacher = null;
+let groupsData = [];
+
+
+async function init() {
+    if (!token) { window.location.href = "../login.html"; return; }
+    try {
+        const profileRes = await fetch('/api/auth/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await profileRes.json();
+        if (data.success) { currentTeacher = data.user; fetchGroups(); }
+    } catch (err) { console.error("Identity Fault."); }
+}
+
+
+/* --- MODAL LOGIC --- */
+function openEditModal(groupId) {
+    targetGroupId = groupId;
+    
+    // Find group name for the UI
+    const group = groupsData.find(g => g.id === groupId);
+    if (group) {
+        document.getElementById('modalGroupName').innerText = group.group_name;
+    }
+
+    // Show the modal
+    const modal = document.getElementById('editModal');
+    modal.style.display = 'flex';
+    document.getElementById('newStudentEmail').focus();
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+    document.getElementById('newStudentEmail').value = "";
+    targetGroupId = null;
+}
+
+/* --- API CALL: ADD MEMBER --- */
+// Modified addMemberToGroup
+
+async function addMemberToGroup() {
+    const email = document.getElementById('newStudentEmail').value.trim();
+    
+    if (!email || !targetGroupId) {
+        return alert("Validation Fault: Valid email required.");
+    }
+
+    try {
+        const res = await fetch('http://localhost:5000/api/teacher/manage-groups', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'addStudent',
+                groupId: targetGroupId,
+                email: email
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            alert("Protocol Successful: Member added to batch.");
+            closeEditModal();
+            fetchGroups(); // Refresh student counts on the main list
+        } else {
+            alert("Access Denied: " + (data.message || "Email not registered or already in group."));
+        }
+    } catch (err) {
+        console.error("System Fault:", err);
+        alert("Transmission Error: Failed to reach the server.");
+    }
+}
+
+// Close modal if clicking outside the card
+window.onclick = function(event) {
+    const modal = document.getElementById('editModal');
+    if (event.target == modal) {
+        closeEditModal();
+    }
+}
+
+/* --- DELETE GROUP --- */
+// Modified delete Group
+async function deleteGroup(groupId) {
+    // 1. Confirm with the user before deleting
+    if (!confirm("CRITICAL ACTION: Are you sure you want to terminate this command batch? All data will be lost.")) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:5000/api/teacher/delete-group/${groupId}`, {
+            method: 'DELETE',
+            headers: { 
+                'Authorization': `Bearer ${token}` 
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            // 2. If the deleted group was active in chat, reset the chat window
+            if (activeGroupId === groupId) {
+                activeGroupId = null;
+                document.getElementById('activeGroupName').innerText = "Select Channel";
+                document.getElementById('chatMessages').innerHTML = 
+                    '<p style="text-align:center; font-family:var(--font-mono); opacity:0.4; margin-top:200px;">Waiting for batch link...</p>';
+            }
+
+            // 3. Refresh the group list
+            fetchGroups();
+            
+            // Optional: Toast or Alert success
+            console.log("Group purged successfully.");
+        } else {
+            alert("Deletion Failed: " + (data.message || "Unknown error"));
+        }
+    } catch (err) {
+        console.error("Transmission Error:", err);
+        alert("Fatal Error: Could not reach the server.");
+    }
+}
+
+async function fetchGroups() {
+    try {
+        const res = await fetch('/api/teacher/my-groups', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) { groupsData = data.groups; renderGroups(data.groups); }
+    } catch (err) { console.error(err); }
+}
+
+function renderGroups(groups) {
+    const listDiv = document.getElementById('groupList');
+    listDiv.innerHTML = groups.length ? groups.map(g => `
+        <div class="batch-individual-card ${activeGroupId == g.id ? 'active' : ''}" id="card-${g.id}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <span style="font-size: 20px; font-weight: 800; color: #1e293b;">${g.group_name}</span>
+                    <p style="font-family: var(--font-mono); font-size: 11px; color: var(--electric-blue); font-weight: 700; margin-top: 5px;">
+                        <i class="fas fa-user-graduate"></i> ${g.student_count || 0} ENROLLED PROTOCOLS
+                    </p>
+                </div>
+                <div style="display:flex; gap: 15px;">
+                    <button onclick="openEditModal(${g.id})" style="border:none; background:none; cursor:pointer; color:var(--electric-blue); font-size: 18px;"><i class="fas fa-user-plus"></i></button>
+                    <button onclick="deleteGroup(${g.id})" style="border:none; background:none; cursor:pointer; color:#ef4444; font-size: 18px;"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>
+            <button class="btn-chat-open" onclick="selectGroup(${g.id}, '${g.group_name}')">
+                <i class="fas fa-comments"></i> Open Discussion
+            </button>
+        </div>`).join('') : "<p style='padding:40px; text-align:center; opacity:0.5;'>No active command batches found.</p>";
+}
+
+async function selectGroup(id, name) {
+    activeGroupId = id;
+    document.getElementById('activeGroupName').innerText = name;
+    document.querySelectorAll('.batch-individual-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('card-' + id).classList.add('active');
+    fetchMessages();
+}
+
+async function fetchMessages() {
+    if (!activeGroupId) return;
+    try {
+        const res = await fetch(`/api/teacher/messages/${activeGroupId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = data.messages.length ? data.messages.map(m => `
+                <div class="msg ${m.sender_id === currentTeacher.id ? 'mine' : 'others'}">
+                    <span style="font-family: var(--font-mono); font-size: 10px; display: block; opacity: 0.7; margin-bottom: 4px; text-transform: uppercase;">
+                        ${m.sender_id === currentTeacher.id ? 'You' : (m.sender_name || 'Student')}
+                    </span>
+                    ${m.message_text}
+                </div>`).join('') : '<p style="text-align:center; opacity:0.5; font-family:var(--font-mono); margin-top:100px;">Channel Empty.</p>';
+            container.scrollTop = container.scrollHeight;
+        }
+    } catch(err){ console.error(err); }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const msg = input.value.trim();
+    if (!msg || !activeGroupId) return;
+    try {
+        const res = await fetch('/api/teacher/post-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ groupId: activeGroupId, message: msg })
+        });
+        if ((await res.json()).success) { input.value = ""; fetchMessages(); }
+    } catch(err){ console.error(err); }
+}
+
+/* --- CREATE --- */
+async function createGroup() {
+    const name = document.getElementById('groupName').value.trim();
+    const emails = document.getElementById('studentEmails').value.split(",").map(e => e.trim()).filter(e => e);
+    if (!name || emails.length === 0) return alert("Validation Fault: Name and Emails required.");
+    try {
+        const res = await fetch('/api/teacher/manage-groups', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ action: 'create', group_name: name, studentEmails: emails })
+        });
+        if ((await res.json()).success) { document.getElementById('groupName').value = ""; document.getElementById('studentEmails').value = ""; fetchGroups(); }
+    } catch (err) { alert("Initialization Error."); }
+}
+
+setInterval(() => { if(activeGroupId) fetchMessages(); }, 4000);
+init();
+</script>
+</body>
+</html>

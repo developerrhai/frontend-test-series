@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institute Dashboard | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-wrapper {
+            padding: 60px 0 120px;
+        }
+
+        /* --- Elite Subscription Bar --- */
+        #subscriptionInfo {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--silver);
+            margin-bottom: 40px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Elite KPI Stats --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 35px 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-blue);
+        }
+
+        .stat-card h3 {
+            font-size: 42px;
+            margin: 0;
+            color: var(--electric-blue);
+            font-weight: 800;
+        }
+
+        .stat-card p {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+
+        /* --- Elite Profile Card Styling --- */
+        .profile-header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 20px;
+        }
+
+        .profile-header h2 {
+            font-size: 32px;
+            margin: 0;
+            color: #1e3a8a;
+            font-weight: 800;
+        }
+
+        .profile-header p {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--silver);
+            text-transform: uppercase;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .info-row {
+            margin-bottom: 30px;
+        }
+
+        .info-row label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #0066FF; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 700;
+        }
+
+        .info-row input {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1e293b;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 12px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* Highlighting the Institute ID Field */
+        #displayId {
+            background: #fdf2ff !important; 
+            color: var(--deep-purple) !important;
+            font-weight: 800 !important;
+            border: 1.5px dashed var(--deep-purple) !important;
+            letter-spacing: 2px;
+            text-align: center;
+            font-size: 18px !important;
+        }
+
+        .readonly-field {
+            background: #f1f5f9 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            border: 1px solid #cbd5e1 !important;
+        }
+
+        /* --- Grid Logic --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        .full-width { grid-column: span 2; }
+
+        /* --- Action Footer --- */
+        .action-footer {
+            display: flex;
+            justify-content: flex-end; 
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .sync-btn {
+            padding: 18px 48px;
+            background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple));
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2);
+        }
+
+        .sync-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(107, 47, 255, 0.3);
+            filter: brightness(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid, .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: auto; }
+            .action-footer { justify-content: center; }
+            .sync-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<main class="dashboard-wrapper">
+    <div class="container">
+        
+        <div id="subscriptionInfo">
+            <i class="fas fa-sync-alt fa-spin"></i> Initializing Secure Uplink...
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="statStudents">0</h3>
+                <p>Students Enrolled</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statTests">0</h3>
+                <p>Modules Created</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statQuestions">0</h3>
+                <p>Data Points (Qs)</p>
+            </div>
+        </div>
+
+        <section class="dashboard">
+            <div class="profile-header">
+                <h2>Institute Intelligence</h2>
+                <p>Identity & Operation Management Protocol</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="info-row">
+                    <label>Unique Institute ID (Share with Students)</label>
+                    <input id="displayId" class="readonly-field" disabled placeholder="INSXXX">
+                </div>
+
+                <div class="info-row">
+                    <label>Active Authorization Plan</label>
+                    <input id="displayPlan" class="readonly-field" disabled>
+                </div>
+
+                <div class="info-row full-width">
+                    <label>Institute Designation (Name)</label>
+                    <input id="name" placeholder="Enter Official Institute Name">
+                </div>
+
+                <div class="info-row">
+                    <label>Auth Neural Link (Email)</label>
+                    <input id="displayEmail" class="readonly-field" disabled>
+                </div>
+
+                <div class="info-row">
+                    <label>Primary Mobile Protocol</label>
+                    <input id="displayMobile" class="readonly-field" disabled>
+                </div>
+
+                <div class="info-row">
+                    <label>WhatsApp Sync Number</label>
+                    <input id="whatsapp" placeholder="Emergency WhatsApp No.">
+                </div>
+
+                <div class="info-row full-width">
+                    <label>HQ Physical Address</label>
+                    <input id="address" placeholder="Full Registered HQ Address">
+                </div>
+            </div>
+
+            <div class="action-footer">
+                <button class="sync-btn" id="saveBtn" onclick="saveProfile()">
+                    <i class="fas fa-sync-alt"></i> 
+                    Sync Intelligence Profile
+                </button>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<script src="layout.js"></script>
+
+<script>
+/* ================= DASHBOARD LOGIC ================= */
+const token = localStorage.getItem("token");
+let user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+
+// Security Check
+if (!token) { window.location.href = "../login.html"; }
+
+// Populates the fields on load
+function fillProfileData() {
+    // Show the custom ID (INS001, etc)
+    document.getElementById("displayId").value = user.id || 'NOT_ASSIGNED';
+    
+    document.getElementById("name").value = user.full_name || '';
+    document.getElementById("displayEmail").value = user.email || '';
+    document.getElementById("displayMobile").value = user.mobile_no || 'NOT PROVIDED';
+    document.getElementById("whatsapp").value = user.whatsapp_no || '';
+    document.getElementById("address").value = user.address || '';
+    document.getElementById("displayPlan").value = user.plan || 'FREE TIER';
+}
+
+async function fetchDashboardStats() {
+    const apiUrl = (typeof getUrl === 'function') ? getUrl : (path) => `http://localhost:5000${path}`;
+    
+    try {
+        const testRes = await fetch(apiUrl("/api/teacher/my-tests"), {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const testData = await testRes.json();
+        if (testData.success) {
+            document.getElementById("statTests").innerText = testData.tests.length;
+            const totalQs = testData.tests.reduce((acc, t) => acc + (t.question_count || 0), 0);
+            document.getElementById("statQuestions").innerText = totalQs;
+        }
+
+        const studentRes = await fetch(apiUrl("/api/teacher/student-count"), {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const studentData = await studentRes.json();
+        if (studentData.success) {
+            document.getElementById("statStudents").innerText = studentData.count;
+        }
+    } catch (err) { console.warn("Stats fetch partially failed."); }
+}
+
+async function saveProfile() {
+    const btn = document.getElementById("saveBtn");
+    const originalHTML = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SYNCING...`;
+
+    const updatedData = {
+        full_name: document.getElementById("name").value.trim(),
+        whatsapp_no: document.getElementById("whatsapp").value.trim(),
+        address: document.getElementById("address").value.trim()
+    };
+
+    const apiUrl = (typeof getUrl === 'function') ? getUrl("/api/auth/update-profile") : "http://localhost:5000/api/auth/update-profile";
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(updatedData)
+        });
+        const data = await response.json();
+        if (data.success) {
+            user = { ...user, ...updatedData };
+            localStorage.setItem("currentUser", JSON.stringify(user));
+            alert("✅ Neural Database Synchronized!");
+        } else {
+            alert("❌ Update failed: " + data.message);
+        }
+    } catch (error) { 
+        alert("❌ Uplink Failure. Check connection."); 
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+function checkSubscriptionStatus() {
+    const infoDiv = document.getElementById("subscriptionInfo");
+    const expiry = user.expiry_date ? new Date(user.expiry_date) : null;
+    const now = new Date();
+
+    if (!expiry || (user.plan === 'Free') || (expiry < now)) {
+        infoDiv.innerHTML = `<span style="color:#ef4444; font-weight:800;"><i class="fas fa-lock"></i> SYSTEM ACCESS RESTRICTED (FREE TIER)</span>`;
+    } else {
+        const diff = expiry - now;
+        const days = Math.floor(diff / (1000 * 86400));
+        infoDiv.innerHTML = `<i class="fas fa-shield-alt" style="color:var(--electric-blue)"></i> SECURE LINK: <b style="color:var(--electric-blue)">${user.plan}</b> ACTIVE (${days} DAYS REMAINING)`;
+    }
+}
+
+// Initial Run
+fillProfileData();
+fetchDashboardStats();
+checkSubscriptionStatus();
+</script>
+
+</body>
+</html>

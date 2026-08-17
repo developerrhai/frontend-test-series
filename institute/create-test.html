@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .dashboard-wrapper { padding: 40px 0 100px; }
+
+        /* --- Elite Broadcast Status Badge --- */
+        .broadcast-status {
+            background: #f0f9ff;
+            border: 1.5px solid #0066FF;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .broadcast-status i { color: #0066FF; font-size: 20px; }
+        .broadcast-status div h4 { font-size: 13px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; }
+        .broadcast-status div p { font-size: 11px; color: #64748b; font-family: var(--font-mono); margin: 0; }
+
+        /* --- Dashboard Header --- */
+        .profile-header {
+            margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;
+        }
+        .profile-header h2 { font-size: 28px; font-weight: 800; color: #1e3a8a; }
+
+        /* --- Form Grid & Input Styling --- */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+
+        .info-row label {
+            display: block; font-family: var(--font-mono); font-size: 10px;
+            color: #0066FF; font-weight: 700; text-transform: uppercase;
+            margin-bottom: 8px; letter-spacing: 1px;
+        }
+
+        input, select, textarea {
+            width: 100%; padding: 14px 18px; border-radius: 12px;
+            border: 1.5px solid #e2e8f0; background: #f8fafc;
+            font-family: var(--font-display); font-size: 14px; outline: none; transition: 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            background: #fff; border-color: #0066FF; box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.08);
+        }
+
+        /* --- Tactical Action Button --- */
+        .action-footer {
+            margin-top: 40px; padding-top: 30px; border-top: 1px solid #f1f5f9;
+            display: flex; justify-content: flex-end;
+        }
+
+        .sync-btn {
+            padding: 16px 40px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #0066FF, #6B2FFF);
+            color: white; font-weight: 800; text-transform: uppercase;
+            font-size: 13px; letter-spacing: 1px; cursor: pointer;
+            transition: 0.3s; display: flex; align-items: center; gap: 10px;
+        }
+
+        .sync-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2); }
+        .sync-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<div id="header-placeholder"></div>
+
+<main class="dashboard-wrapper">
+    <div class="container" style="max-width: 900px;">
+        
+        <div class="broadcast-status">
+            <i class="fas fa-satellite-dish"></i>
+            <div>
+                <h4>Intelligence Broadcast: Active</h4>
+                <p>All students linked to your Institute ID will automatically receive this test deployment.</p>
+            </div>
+        </div>
+
+        <section class="dashboard">
+            <div class="profile-header">
+                <h2 id="pageTitle"><i class="fas fa-plus-circle"></i> Create Test Series</h2>
+            </div>
+
+            <div class="form-grid">
+                <div class="info-row full-width">
+                    <label>Examination Designation (Title)</label>
+                    <input id="title" placeholder="e.g., JEE Main 2026 - Phase 1 Mock">
+                </div>
+
+                <div class="info-row">
+                    <label>Target Series</label>
+                    <select id="series">
+                        <option>JEE Main</option>
+                        <option>JEE Advanced</option>
+                        <option>NEET</option>
+                    </select>
+                </div>
+
+                <div class="info-row">
+                    <label>Time Limitation (Minutes)</label>
+                    <input type="number" id="duration" placeholder="180">
+                </div>
+
+                <div class="info-row">
+                    <label>Subject Focus Protocol</label>
+                    <select id="subjectType">
+                        <option>Mixed</option>
+                        <option>Physics</option>
+                        <option>Chemistry</option>
+                        <option>Maths</option>
+                        <option>Biology</option>
+                    </select>
+                </div>
+
+                <div class="info-row full-width">
+                    <label>Additional Guest Gmails (Optional)</label>
+                    <textarea id="studentsInput" placeholder="Add guest emails here, separated by commas" rows="3" style="resize: none;"></textarea>
+                    <small style="color: var(--silver); font-size: 10px; font-family: var(--font-mono); margin-top: 5px; display: block;">
+                        * Institute students are added automatically. Use this field for external students only.
+                    </small>
+                </div>
+            </div>
+
+            <div class="action-footer">
+                <button class="sync-btn" id="createBtn">
+                    <i class="fas fa-rocket"></i> 
+                    <span id="btnText">Launch & Broadcast Test</span>
+                </button>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="layout.js"></script>
+
+<script>
+const token = localStorage.getItem("token");
+const params = new URLSearchParams(window.location.search);
+const isEdit = params.get("edit") === "true";
+const editTestId = params.get("id");
+
+if (!token) { window.location.href = "../login.html"; }
+
+// Handle Edit Mode Initial UI
+if (isEdit) {
+    document.getElementById("pageTitle").innerHTML = '<i class="fas fa-pen"></i> Update Test Series';
+    document.getElementById("btnText").innerText = 'Sync & Update Test';
+    loadTestData();
+}
+
+async function loadTestData() {
+    const apiUrl = (typeof getUrl === 'function') ? getUrl(`/api/teacher/test/${editTestId}`) : `/api/teacher/test/${editTestId}`;
+    try {
+        const res = await fetch(apiUrl, { headers: { "Authorization": `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) {
+            const t = data.test;
+            document.getElementById("title").value = t.title;
+            document.getElementById("duration").value = t.duration;
+            document.getElementById("series").value = t.series;
+            document.getElementById("subjectType").value = (t.subject_type || t.subject);
+            document.getElementById("studentsInput").value = (t.assignedGmails || []).join(", ");
+        }
+    } catch (err) { console.error("Neural data load failed."); }
+}
+
+document.getElementById("createBtn").onclick = async () => {
+    const btn = document.getElementById("createBtn");
+    const originalText = document.getElementById("btnText").innerText;
+    
+    const titleVal = document.getElementById("title").value.trim();
+    const durationVal = document.getElementById("duration").value;
+    const seriesVal = document.getElementById("series").value;
+    const subjectVal = document.getElementById("subjectType").value;
+    
+    // Parse Guest Gmails
+    const rawGmails = document.getElementById("studentsInput").value;
+    const gmails = rawGmails ? rawGmails.split(",").map(e => e.trim()).filter(e => e.includes("@")) : [];
+
+    if (!titleVal || !durationVal) return alert("System Error: Title and Duration are required.");
+
+    btn.disabled = true;
+    document.getElementById("btnText").innerText = 'SYNCING PROTOCOL...';
+
+    const url = isEdit ? (typeof getUrl === 'function' ? getUrl(`/api/teacher/update-test/${editTestId}`) : `/api/teacher/update-test/${editTestId}`) 
+                       : (typeof getUrl === 'function' ? getUrl("/api/teacher/create-test") : "/api/teacher/create-test");
+    
+    const method = isEdit ? "PUT" : "POST";
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                examId: isEdit ? undefined : ("EXAM-" + Date.now()), 
+                title: titleVal,
+                series: seriesVal,
+                duration: durationVal,
+                subject: subjectVal,
+                assignedGmails: gmails // Even if empty, backend will fetch linked students
+            })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
+            window.location.href = "my-tests.html";
+        } else {
+            alert(data.message);
+            btn.disabled = false;
+            document.getElementById("btnText").innerText = originalText;
+        }
+    } catch (err) {
+        alert("Neural uplink failed. Check your connection.");
+        btn.disabled = false;
+        document.getElementById("btnText").innerText = originalText;
+    }
+};
+</script>
+
+</body>
+</html>

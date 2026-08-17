@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assigned Tests | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Spacing for the fixed header */
+        .dashboard-wrapper {
+            padding: 40px 0 100px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Subscription Bar - Professional Elite Look */
+        #subscriptionInfo {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: #1e293b;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        #subscriptionInfo b {
+            color: var(--electric-blue);
+            font-size: 14px;
+        }
+
+        /* Individual Exam Cards (One per card) */
+        .exam-individual-card {
+            background: var(--pure-white);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px; /* The GAP for background color */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exam-individual-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-blue);
+        }
+
+        .exam-individual-card.completed {
+            border-left: 6px solid #10b981;
+            opacity: 0.9;
+        }
+
+        .exam-title {
+            color: #1e3a8a;
+            margin: 0 0 10px 0;
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .exam-meta {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Access Locked State Styling */
+        .locked-card {
+            text-align: center;
+            padding: 60px 40px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        }
+
+        .locked-card i { color: #94a3b8; margin-bottom: 20px; }
+        .locked-card h2 { font-weight: 800; color: #1e293b; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<main class="dashboard-wrapper">
+    <div id="subscriptionInfo" class="subscription-info">
+        <i class="fas fa-shield-alt"></i> Validating secure access protocol...
+    </div>
+
+    <section id="content">
+        <div style="text-align: center; padding: 60px;">
+            <p style="font-family: var(--font-mono); color: var(--silver);">
+                <i class="fas fa-spinner fa-spin"></i> SYNCING BATCH REPOSITORY...
+            </p>
+        </div>
+    </section>
+</main>
+
+<script src="layout.js"></script>
+
+<script>
+const token = localStorage.getItem("token");
+if(!token) location.href="../login.html";
+
+/* ===== PAGE LOGIC (Script logic unchanged as requested) ===== */
+async function initPage() {
+    try {
+        const res = await fetch('/api/payment/status',{headers:{'Authorization':`Bearer ${token}`}});
+        const data = await res.json();
+        if(data.success && data.isActive){ startCountdown(data.expiry_date); fetchTests(); }
+        else showLockedUI();
+    } catch(err){ console.error(err); showLockedUI(); }
+}
+
+async function fetchTests() {
+    try{
+        const res = await fetch('/api/student/my-tests',{headers:{'Authorization':`Bearer ${token}`}});
+        const data = await res.json();
+        if(data.success) renderTests(data.exams);
+    }catch(err){ document.getElementById("content").innerHTML="<p>Failed to load exams.</p>"; }
+}
+
+function renderTests(exams){
+    let html=`<h2 style="margin-bottom: 30px; color: #1e3a8a; font-weight: 800;"><i class="fas fa-file-alt"></i> Assigned Modules</h2>`;
+    if(!exams || exams.length===0){
+        html+=`<div class="exam-individual-card" style="text-align:center; padding:60px;">
+        <i class="fas fa-tasks fa-3x" style="margin-bottom:15px; opacity:0.1; color: var(--electric-blue);"></i>
+        <p style="color: var(--silver); font-family: var(--font-mono);">No examinations assigned to your current batch protocol.</p>
+        </div>`;
+    }else{
+        exams.forEach(e=>{
+            const done = e.is_attempted > 0;
+            html+=`
+            <div class="exam-individual-card ${done?'completed':''}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 class="exam-title">${e.title}</h4>
+                        <p class="exam-meta">
+                            <b>SUBJECT:</b> ${e.subject_type||'General'} | <b>LIMIT:</b> ${e.duration} MINS
+                        </p>
+                    </div>
+                    <div>
+                        ${done ? 
+                            `<button class="btn-completed" disabled 
+                                     style="background:#10b981; color:#fff; border:none; padding:12px 24px; border-radius:10px; font-weight:700; cursor:default;">
+                                <i class="fas fa-check-circle"></i> COMPLETED
+                             </button>` :
+                            `<button id="btn-${e.id}" onclick="startTest('${e.id}')"
+                                     style="background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.2);">
+                                ENTER EXAM ROOM
+                             </button>`
+                        }
+                    </div>
+                </div>
+            </div>`;
+        });
+    }
+    document.getElementById("content").innerHTML=html;
+}
+
+async function startTest(id){
+    const btn=document.getElementById(`btn-${id}`);
+    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> SYNCING...';
+    try{
+        const res=await fetch(`/api/student/get-exam-details/${id}`,{headers:{'Authorization':`Bearer ${token}`}});
+        const data=await res.json();
+        if(data.success){ localStorage.setItem("currentExam",JSON.stringify(data.exam)); location.href="exam-permission.html"; }
+        else{ alert(data.message); location.reload(); }
+    }catch(err){ alert("Connection error."); btn.disabled=false; btn.innerText="ENTER EXAM ROOM"; }
+}
+
+function startCountdown(expiryStr){
+    const expiry=new Date(expiryStr), el=document.getElementById("subscriptionInfo");
+    function tick(){
+        const now=new Date(), diff=expiry-now;
+        if(diff<=0){ el.innerHTML="<i class='fas fa-exclamation-triangle'></i> Access expired! System lock engaged."; location.reload(); return; }
+        const d=Math.floor(diff/(1000*60*60*24)), h=Math.floor((diff/(1000*60*60))%24),
+        m=Math.floor((diff/(1000*60))%60), s=Math.floor((diff/1000)%60);
+        el.innerHTML=`<i class="fas fa-clock"></i> Access validity: <b>${d}d ${h}h ${m}m ${s}s</b>`;
+    }
+    tick(); setInterval(tick,1000);
+}
+
+function showLockedUI(){
+    document.getElementById("subscriptionInfo").style.display="none";
+    document.getElementById("content").innerHTML=`
+    <div class="locked-card">
+        <i class="fas fa-lock fa-4x"></i>
+        <h2>Access Locked</h2>
+        <p style="color: var(--silver); margin-bottom: 25px;">Your batch access token is inactive. Please initialize a subscription plan to unlock your assigned tests.</p>
+        <button onclick="location.href='subscription.html'" 
+                style="background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: white; border: none; padding: 16px 40px; border-radius: 12px; font-weight: 800; cursor: pointer;">
+            BROWSE ELITE PLANS
+        </button>
+    </div>`;
+}
+
+function logout(){ localStorage.clear(); location.href="../login.html"; }
+
+initPage();
+</script>
+</body>
+</html>

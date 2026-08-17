@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About System | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ===================================
+           1. ELITE CORE & VARIABLES
+           =================================== */
+        :root {
+            --electric-blue: #0066FF;
+            --deep-purple: #6B2FFF;
+            --cyber-cyan: #00F5FF;
+            --midnight: #0A0E27;
+            --pure-white: #FFFFFF;
+            --light-bg: #f4f7fe; 
+            --text-dark: #1e293b;
+            --silver: #64748b;
+            --font-display: 'Sora', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-display);
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        /* ===================================
+           2. NAVIGATION HEADER
+           =================================== */
+        .header {
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--electric-blue), var(--cyber-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .header nav a {
+            color: #fff;
+            margin-left: 25px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: 0.3s;
+        }
+
+        .header nav a:hover { color: var(--cyber-cyan); }
+
+        /* ===================================
+           3. MAIN CONTENT
+           =================================== */
+        .container {
+            max-width: 1100px;
+            margin: 120px auto 60px;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            background: linear-gradient(135deg, var(--midnight), #1e3a8a);
+            color: #fff;
+            padding: 80px 40px;
+            border-radius: 30px;
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(10, 14, 39, 0.2);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0, 102, 255, 0.1) 0%, transparent 70%);
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .hero p {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--cyber-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        /* --- CONTENT SECTIONS --- */
+        .elite-card {
+            background: var(--pure-white);
+            padding: 45px;
+            border-radius: 24px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 35px;
+        }
+
+        .protocol-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--electric-blue);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .elite-card h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+
+        .elite-card p {
+            color: var(--silver);
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        /* --- FEATURES GRID --- */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .feature-module {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 18px;
+            border-left: 4px solid var(--electric-blue);
+            transition: 0.3s;
+        }
+
+        .feature-module:hover {
+            transform: translateY(-5px);
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-module i {
+            font-size: 24px;
+            color: var(--electric-blue);
+            margin-bottom: 15px;
+        }
+
+        .feature-module h4 {
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .feature-module p {
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* ===================================
+           4. ELITE FOOTER
+           =================================== */
+        .footer {
+            background: var(--midnight);
+            color: #fff;
+            padding: 60px 40px 30px;
+            margin-top: auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 40px;
+            max-width: 1100px;
+            margin: 0 auto 40px;
+        }
+
+        .footer h4 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .footer ul { list-style: none; }
+        .footer ul li { margin-bottom: 10px; }
+        .footer ul li a { color: var(--silver); text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .footer ul li a:hover { color: var(--cyber-cyan); }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            color: var(--silver);
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 15px 20px; }
+            .header nav { display: none; }
+            .hero h1 { font-size: 28px; }
+            .elite-card { padding: 30px 20px; }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <a href="index.html" class="logo">TestSeries</a>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="aboutus.html" style="color: var(--cyber-cyan);">About</a>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+        <a href="contactus.html">Contact</a>
+    </nav>
+</header>
+
+<main class="container">
+
+    <div class="hero">
+        <h1>Intelligence in Assessment</h1>
+        <p>The Future of Competitive Examination Protocol</p>
+    </div>
+
+    <section class="elite-card">
+        <span class="protocol-label">Identity Overview</span>
+        <h2>Unified Neural Learning</h2>
+        <p>
+            TestSeries is an advanced digital assessment ecosystem designed to bridge the gap between preparation and performance. We specialize in high-precision testing environments for <b>JEE, NEET, and Advanced Institutional Entrances</b>.
+        </p>
+        <p>
+            By integrating real-time analytics with standard examination patterns, we provide a simulation layer that prepares students for the mental and technical rigors of national-level competition.
+        </p>
+    </section>
+
+    <section class="elite-card" style="border-top: 6px solid var(--deep-purple);">
+        <span class="protocol-label">System Mission Protocol</span>
+        <h2>Democratizing Excellence</h2>
+        <p>
+            Our core directive is to provide world-class assessment tools that are accessible to every student and institute across India, regardless of geographical limitations.
+        </p>
+        <p>
+            We believe that success is a result of <b>Iterative Practice + Precise Analytics</b>. Our mission is to refine that loop until peak performance becomes a standard.
+        </p>
+    </section>
+
+    <section class="elite-card">
+        <span class="protocol-label">Operational Advantages</span>
+        <h2>Why The Elite Choose TestSeries</h2>
+
+        <div class="features-grid">
+            <div class="feature-module">
+                <i class="fas fa-microchip"></i>
+                <h4>Smart Simulation</h4>
+                <p>Timed environments modeled exactly on NTA and specialized board protocols.</p>
+            </div>
+
+            <div class="feature-module">
+                <i class="fas fa-chart-network"></i>
+                <h4>AI Data Analytics</h4>
+                <p>Instant breakdown of accuracy, subject strengths, and time-management behavior.</p>
+            </div>
+
+            <div class="feature-module">
+                <i class="fas fa-server"></i>
+                <h4>Institute Control</h4>
+                <p>Dedicated command centers for teachers to manage batches and track global growth.</p>
+            </div>
+
+            <div class="feature-module">
+                <i class="fas fa-shield-check"></i>
+                <h4>Verified Integrity</h4>
+                <p>Secure authentication and role-based access to protect student and module data.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="elite-card" style="text-align: center;">
+        <span class="protocol-label">Future Vector</span>
+        <h2>The Vision</h2>
+        <p>
+            To evolve into India's primary neural network for academic assessment, empowering every student to unlock their highest cognitive potential through technology.
+        </p>
+    </section>
+
+</main>
+
+<footer class="footer">
+    <div class="footer-grid">
+        <div>
+            <h3 class="logo" style="font-size: 20px;">TestSeries</h3>
+            <p style="color: var(--silver); font-size: 14px; margin-top: 15px; line-height: 1.6;">
+                Advanced AI-driven examination platform empowering institutes and students across India.
+            </p>
+        </div>
+        <div>
+            <h4>Protocol</h4>
+            <ul>
+                <li><a href="aboutus.html">About System</a></li>
+                <li><a href="privacy.html">Privacy Policy</a></li>
+                <li><a href="terms.html">Terms of Service</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Uplink</h4>
+            <ul>
+                <li><a href="login.html">Portal Login</a></li>
+                <li><a href="register.html">New Registration</a></li>
+                <li><a href="contactus.html">Support Link</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 ReadyHand AI Technology & Infynex Groups. All Rights Reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

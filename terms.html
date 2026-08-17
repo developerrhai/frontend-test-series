@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Terms & Conditions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f6fb;
+  color:#1f2937;
+  padding-top:80px;
+}
+
+/* HEADER */
+header{
+  position:fixed;
+  top:0;
+  width:100%;
+  background:rgba(30,64,175,0.95);
+  color:#fff;
+  padding:14px 40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  z-index:1000;
+}
+
+header .logo{
+  font-size:22px;
+  font-weight:bold;
+}
+
+header nav a{
+  color:#fff;
+  margin-left:20px;
+  text-decoration:none;
+  font-size:15px;
+}
+
+header nav a:hover{
+  text-decoration:underline;
+}
+
+/* CONTAINER */
+.tc-container{
+  max-width:900px;
+  margin:30px auto;
+  background:#fff;
+  padding:32px;
+  border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+h1{
+  color:#1e40af;
+  margin-bottom:10px;
+}
+
+h3{
+  margin-top:26px;
+  color:#111827;
+}
+
+p, li{
+  line-height:1.7;
+  font-size:15px;
+}
+
+ul{
+  margin-left:20px;
+  margin-top:8px;
+}
+
+/* ACCEPT SECTION */
+.accept-box{
+  margin-top:30px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+button{
+  margin-top:20px;
+  padding:12px 24px;
+  background:#1e40af;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:15px;
+}
+
+button:disabled{
+  background:#9ca3af;
+  cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">TestSeries</div>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../about.html">About</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
+  </nav>
+</header>
+
+<div class="tc-container">
+<h1>Terms & Conditions</h1>
+<p>Last updated: <b>2026</b></p>
+
+<p>
+These Terms & Conditions govern the use of the Online Examination Platform
+by <b>Students, Institutes, and Administrators</b>. By registering, accessing,
+or using the platform, you agree to comply with these terms.
+</p>
+
+<h3>1. User Eligibility</h3>
+<ul>
+  <li>Users must provide accurate and complete registration information.</li>
+  <li>Institutes must be authorized to conduct examinations.</li>
+  <li>Any false or misleading information may lead to account suspension.</li>
+</ul>
+
+<h3>2. Platform Usage</h3>
+<ul>
+  <li>The platform may be used only for legitimate examination purposes.</li>
+  <li>Users must not misuse, disrupt, or attempt to bypass system security.</li>
+  <li>Institutes are responsible for exam content uploaded by them.</li>
+</ul>
+
+<h3>3. Examination Rules (For Students)</h3>
+<ul>
+  <li>Exams must be taken in a quiet, well-lit environment.</li>
+  <li>No external assistance, devices, books, or notes are permitted.</li>
+  <li>Switching tabs, minimizing windows, or screen recording is prohibited.</li>
+</ul>
+
+<h3>4. Camera & AI Proctoring</h3>
+<ul>
+  <li>Camera access is mandatory during proctored exams.</li>
+  <li>AI systems may monitor face presence, movement, and activity.</li>
+  <li>Repeated violations may trigger automatic submission or termination.</li>
+</ul>
+
+<h3>5. Automatic Submission & Termination</h3>
+<p>The exam may be automatically submitted or terminated if:</p>
+<ul>
+  <li>Exam time expires</li>
+  <li>Camera is disabled or face is not detected repeatedly</li>
+  <li>Suspicious or prohibited activity is detected</li>
+</ul>
+
+<h3>6. Technical Responsibility</h3>
+<ul>
+  <li>Users must ensure stable internet, power, and compatible devices.</li>
+  <li>The platform is not liable for failures caused by user-side issues.</li>
+</ul>
+
+<h3>7. Data, Privacy & Security</h3>
+<ul>
+  <li>User data is handled as per the Privacy Policy.</li>
+  <li>Captured images and logs are used only for exam integrity.</li>
+  <li>Institutes must handle student data responsibly.</li>
+</ul>
+
+<h3>8. Payments & Refunds</h3>
+<ul>
+  <li>Exam or service fees, once paid, are generally non-refundable.</li>
+  <li>Refunds may be issued only in case of verified technical failure.</li>
+  <li>Institutes are responsible for their own pricing and refund policies.</li>
+</ul>
+
+<h3>9. Results & Evaluation</h3>
+<ul>
+  <li>Evaluation may be automated or institute-controlled.</li>
+  <li>Results declared by the system or institute are final.</li>
+</ul>
+
+<h3>10. Violations & Penalties</h3>
+<p>Violation of these terms may result in:</p>
+<ul>
+  <li>Immediate exam termination</li>
+  <li>Account suspension or permanent ban</li>
+  <li>Legal action in case of serious misconduct</li>
+</ul>
+
+<h3>11. Modifications</h3>
+<p>
+The platform reserves the right to update these Terms & Conditions at any time.
+Continued usage implies acceptance of revised terms.
+</p>
+
+<h3>12. Acceptance</h3>
+<p>
+By clicking <b>“Accept & Continue”</b>, you confirm that you have read,
+understood, and agreed to these Terms & Conditions.
+</p>
+
+<div class="accept-box">
+  <input type="checkbox" id="accept">
+  <label for="accept">I agree to the Terms & Conditions</label>
+</div>
+
+<button id="continueBtn" disabled onclick="acceptTC()">Accept & Continue</button>
+
+</div>
+
+<script>
+const checkbox = document.getElementById("accept");
+const btn = document.getElementById("continueBtn");
+
+checkbox.addEventListener("change", () => {
+  btn.disabled = !checkbox.checked;
+});
+
+function acceptTC(){
+  localStorage.setItem("termsAccepted","true");
+  window.history.back();
+}
+</script>
+
+</body>
+</html>

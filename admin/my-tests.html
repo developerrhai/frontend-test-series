@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Mock Tests | Admin</title>
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        .test-title { font-size: 1.2rem; font-weight: bold; color: #1e40af; }
+        .card { border-left: 5px solid #1e40af; margin-bottom: 20px; }
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-right: 5px; }
+        .green { background: #dcfce7; color: #166534; }
+        .red-btn { background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+        .red-btn:hover { background: #dc2626; }
+    </style>
+</head>
+<body>  
+
+<div id="header"></div>
+
+<div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>Global Mock Tests</h1>
+        <button class="blue" onclick="location.href='create-mock-test.html'">+ Create New Mock</button>
+    </div>
+    <div id="list">
+        <p>Fetching mock series from database...</p>
+    </div>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+const list = document.getElementById("list");
+
+if (!token) {
+    location.href = "../login.html";
+}
+
+// Load Admin Header
+fetch("admin-header.html")
+    .then(r => r.text())
+    .then(t => document.getElementById("header").innerHTML = t);
+
+/* ================= FETCH DATA (ADMIN API) ================= */
+async function loadMyTests() {
+    try {
+        // We use the available-mocks endpoint which is now shared with Admin
+        const response = await fetch('/api/student/available-mocks', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            renderTests(data.exams);
+        } else {
+            list.innerHTML = `<div class="card">Error: ${data.message}</div>`;
+        }
+    } catch (err) {
+        list.innerHTML = `<div class="card">Connection failed. Check if server is running.</div>`;
+    }
+}
+
+/* ================= RENDER UI ================= */
+function renderTests(exams) {
+    list.innerHTML = "";
+    if (!exams.length) {
+        list.innerHTML = `
+            <div class="card" style="text-align:center;">
+                <p>No global mock tests found. Start by creating one!</p>
+            </div>`;
+        return;
+    }
+
+    exams.forEach(t => {
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+            <div class="test-title">${t.title}</div>
+            <div class="meta" style="margin: 5px 0; color: #666;">
+                ${t.series || 'Mock Series'} | ${t.duration} min | ${t.subject_type}
+            </div>
+
+            <div class="badges" style="margin: 10px 0;">
+                <span class="badge green">Total Questions: ${t.total_questions || 0}</span>
+                <span class="badge" style="background:#eee; color:#666">ID: ${t.id}</span>
+            </div>
+
+            <div class="actions" style="margin-top: 15px;">
+                <button class="blue" onclick="addQ('${t.id}')">Add Questions</button>
+                <button class="outline" onclick="viewQ('${t.id}')">View/Edit Questions</button>
+                <button class="red-btn" onclick="del('${t.id}')">Delete Test</button>
+            </div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+/* ================= ACTIONS ================= */
+function addQ(id) { location.href = "add-question.html?id=" + id; }
+function viewQ(id) { location.href = "view-questions.html?id=" + id; }
+
+async function del(id) {
+    if (!confirm("CRITICAL WARNING:\n\nThis will permanently delete the entire test and ALL associated questions from the database. This cannot be undone.\n\nProceed?")) return;
+
+    try {
+        // FIXED: Using the dedicated Admin Delete route
+        const response = await fetch(`/api/admin/delete-test/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            alert("Mock Test and its questions have been wiped from the database.");
+            loadMyTests(); 
+        } else {
+            alert("Delete failed: " + data.message);
+        }
+    } catch (err) {
+        alert("Server error during deletion.");
+    }
+}
+
+// Initial Load
+loadMyTests();
+</script>
+</body>
+</html>

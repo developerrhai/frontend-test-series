@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Identity Verification | TestSeries</title>
+    <style>
+        /* (Keeping your existing styles) */
+        body{ margin:0; font-family: Arial, sans-serif; background:#f4f6fb; display:flex; justify-content:center; align-items:center; height:100vh; }
+        .permission-box{ background:#fff; width:420px; padding:25px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.1); text-align:center; }
+        .permission-box h2{ margin-bottom:10px; color:#1e3a8a; }
+        .permission-box p{ color:#666; font-size:14px; margin-bottom: 20px; }
+        video, canvas{ width:100%; border-radius:8px; margin-top:15px; display:none; transform: scaleX(-1); } /* Mirror effect for natural feel */
+        .status{ margin:10px 0; font-size:14px; font-weight:bold; }
+        .btn{ width:100%; padding:12px; border:none; border-radius:6px; font-size:15px; cursor:pointer; margin-top:10px; font-weight: 600; }
+        .btn-primary{ background:#2563eb; color:#fff; }
+        .btn-success{ background:#16a34a; color:#fff; }
+        .btn-disabled{ background:#9ca3af; color:#fff; cursor:not-allowed; }
+        footer{ margin-top:15px; font-size:12px; color:#888; }
+    </style>
+</head>
+<body>
+
+
+<div class="permission-box">
+    <h2 id="examTitle">Identity Verification</h2>
+    <p>Please capture a clear photo of your face to proceed with the examination.</p>
+
+    <video id="video" autoplay muted></video>
+    <canvas id="canvas"></canvas>
+
+    <div id="status" class="status">Waiting for camera...</div>
+
+    <button id="allowBtn" class="btn btn-primary" onclick="allowPermissions()">
+        Allow Camera & Mic
+    </button>
+
+    <button id="captureBtn" class="btn btn-primary" style="display:none" onclick="capturePhoto()">
+        Capture Photo
+    </button>
+
+    <button id="startBtn" class="btn btn-success btn-disabled" disabled onclick="startExam()">
+        Enter Exam Hall
+    </button>
+
+    <footer>© 2026 TestSeries AI Proctoring</footer>
+</div>
+
+<script>
+let stream;
+// 1. Check if an exam is actually selected
+const exam = JSON.parse(localStorage.getItem("currentExam"));
+if(!exam) {
+    alert("No exam selected. Redirecting to dashboard.");
+    window.location.href="tests.html";
+} else {
+    document.getElementById("examTitle").innerText = exam.title;
+}
+
+// STEP 1: Allow permissions
+async function allowPermissions(){
+    try{
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 640, height: 480 },
+            audio: true
+        });
+
+        document.getElementById("video").srcObject = stream;
+        document.getElementById("video").style.display="block";
+        document.getElementById("status").innerText="Camera access granted ✔";
+        document.getElementById("status").style.color="#16a34a";
+
+        document.getElementById("allowBtn").style.display="none";
+        document.getElementById("captureBtn").style.display="block";
+    }catch(err){
+        alert("Camera and Microphone are required for proctoring. Please enable them in your browser settings.");
+        console.error(err);
+    }
+}
+
+// STEP 2: Capture snapshot
+function capturePhoto(){
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Apply mirror effect to the captured image too
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Standardize quality to keep Base64 size manageable (10mb limit on backend)
+    const imageData = canvas.toDataURL("image/jpeg", 0.7); 
+    localStorage.setItem("examSnapshot", imageData);
+
+    canvas.style.display="block";
+    video.style.display="none";
+
+    document.getElementById("status").innerText="Identity verified successfully ✔";
+    document.getElementById("status").style.color="#16a34a";
+
+    document.getElementById("captureBtn").style.display="none";
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("startBtn").classList.remove("btn-disabled");
+
+    // Stop camera to free up hardware resources for the exam
+    if(stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+}
+
+// STEP 3: Start exam
+function startExam(){
+    // Set a timestamp for when the exam actually starts to track total duration
+    localStorage.setItem("examStartTime", new Date().toISOString());
+    window.location.href="exam.html";
+}
+</script>
+
+</body>
+</html>

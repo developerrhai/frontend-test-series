@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Reports | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Layout spacing for fixed header */
+        .dashboard-wrapper {
+            padding: 40px 0 100px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Individual Report Card Design */
+        .report-individual-card {
+            background: var(--pure-white);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px; /* The GAP for background color */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            border-left: 6px solid var(--electric-blue);
+            transition: transform 0.3s ease;
+        }
+
+        .report-individual-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .score-display {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--electric-blue);
+        }
+
+        .report-meta {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+        }
+
+        /* Analysis Button Styles */
+        .view-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-active {
+            background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple));
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.2);
+        }
+
+        .btn-locked {
+            background: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+            border: 1px dashed #cbd5e1;
+        }
+
+        /* Countdown Style */
+        .countdown-timer {
+            margin-top: 12px;
+            color: #ef4444;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<main class="dashboard-wrapper">
+    <section class="dashboard-header" style="margin-bottom: 40px; text-align: center;">
+        <h2 style="font-weight: 800; color: #1e3a8a; margin: 0;">Performance Analytics</h2>
+        <p style="font-family: var(--font-mono); color: var(--silver); font-size: 12px; text-transform: uppercase; margin-top: 5px;">Exam History & Detailed Insight Reports</p>
+    </section>
+
+    <div id="content">
+        <div style="text-align: center; padding: 60px;">
+            <p style="font-family: var(--font-mono); color: var(--silver);">
+                <i class="fas fa-spinner fa-spin"></i> SYNCING REPORT REPOSITORY...
+            </p>
+        </div>
+    </div>
+</main>
+
+<script src="layout.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const token = localStorage.getItem("token");
+    if (!token) location.href = "../login.html";
+
+    const LOCK_MS = 24 * 60 * 60 * 1000; // 24 hours lock protocol
+
+    /* ===== DATA FETCHING (Logic Unchanged) ===== */
+    async function loadReports() {
+        try {
+            const res = await fetch('/api/student/reports', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) renderCards(data.history);
+            else document.getElementById("content").innerHTML = `<p style="text-align:center;">${data.message}</p>`;
+        } catch(err){
+            document.getElementById("content").innerHTML = "<p style='text-align:center;'>Failed to load reports. Network error.</p>";
+        }
+    }
+
+    /* ===== CARD RENDERING (Redesigned for Elite Cards) ===== */
+    function renderCards(history) {
+        const container = document.getElementById("content");
+        container.innerHTML = history.length === 0 ? "<p style='text-align:center; color:var(--silver);'>No exam attempts detected in the database.</p>" : "";
+
+        history.forEach(res => {
+            const attemptedTime = new Date(res.attempted_at).getTime();
+            const unlockTime = attemptedTime + LOCK_MS;
+            const isLocked = Date.now() < unlockTime;
+
+            const card = document.createElement("div");
+            card.className = "report-individual-card";
+            const countdownId = `countdown-${res.id}`;
+            const btnId = `btn-${res.id}`;
+
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <b style="font-size: 1.3rem; color: #1e293b; font-weight: 800;">${res.title}</b>
+                        <p class="report-meta">
+                            <i class="far fa-calendar-alt"></i> ATTEMPTED: ${new Date(res.attempted_at).toLocaleDateString()}
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 11px; color: var(--silver); text-transform: uppercase; font-family: var(--font-mono);">Final Score</span>
+                        <div>
+                            <span class="score-display">${res.score}</span> 
+                            <span style="color: #94a3b8; font-weight: 700;">/ ${(res.total_questions || 0) * 4}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="${btnId}" class="view-btn ${isLocked ? 'btn-locked' : 'btn-active'}" 
+                        ${isLocked ? 'disabled' : ''} 
+                        onclick="${isLocked ? '' : `location.href='view-result.html?id=${res.id}'`}">
+                    ${isLocked ? '<i class="fas fa-lock"></i> Analysis Locked' : '<i class="fas fa-chart-line"></i> View Detailed Analysis'}
+                </button>
+
+                ${isLocked ? `
+                    <div class="countdown-timer" id="${countdownId}">
+                        <i class="fas fa-hourglass-half"></i> SECURE DECRYPTION IN PROGRESS...
+                    </div>` : ''}  
+            `;
+            container.appendChild(card);
+
+            if (isLocked) startCountdown(unlockTime, countdownId, btnId, res.id);
+        });
+    }
+
+    /* ===== TIMER LOGIC (Logic Unchanged) ===== */
+    function startCountdown(unlockTime, countdownId, btnId, resId) {
+        const timer = setInterval(() => {
+            const now = Date.now();
+            const diff = unlockTime - now;
+
+            if (diff <= 0) {
+                clearInterval(timer);
+                const countEl = document.getElementById(countdownId);
+                if(countEl) countEl.remove();
+                
+                const btn = document.getElementById(btnId);
+                if(btn) {
+                    btn.disabled = false;
+                    btn.classList.remove("btn-locked");
+                    btn.classList.add("btn-active");
+                    btn.innerHTML = '<i class="fas fa-chart-line"></i> View Detailed Analysis';
+                    btn.onclick = () => location.href = `view-result.html?id=${resId}`;
+                }
+                return;
+            }
+
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+
+            const countEl = document.getElementById(countdownId);
+            if(countEl) {
+                countEl.innerHTML = `<i class="fas fa-clock"></i> UNLOCKS IN ${h}h ${m}m ${s}s`;
+            }
+        }, 1000);
+    }
+
+    loadReports();
+});
+</script>
+</body>
+</html>

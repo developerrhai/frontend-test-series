@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Repository | Elite Admin</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --electric-blue: #0066FF;
+            --deep-purple: #6B2FFF;
+            --cyber-cyan: #00F5FF;
+            --midnight: #0A0E27;
+            --pure-white: #FFFFFF;
+            --light-bg: #f4f7fe;
+            --text-dark: #1e293b;
+            --silver: #64748b;
+            --neon-green: #00FF88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--light-bg);
+            padding-top: 150px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: var(--midnight);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .top-bar {
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo { font-weight: 800; color: white; font-size: 22px; text-decoration: none; }
+        .logo span { color: var(--cyber-cyan); }
+
+        .command-ribbon {
+            background: rgba(10, 14, 39, 0.98);
+            padding: 10px 40px;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+        }
+
+        .nav-link {
+            color: var(--silver);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Space Mono';
+            text-transform: uppercase;
+            padding: 10px 18px;
+            border-radius: 8px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .nav-link.active { color: var(--cyber-cyan); background: rgba(0, 245, 255, 0.1); }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; flex: 1; text-align: center; }
+
+        /* --- SERIES BUTTONS --- */
+        .series-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 50px; }
+        .series-btn { background: #fff; color: var(--neon-green); border: 2px solid var(--neon-green); padding: 10px 22px; border-radius: 50px; font-family: 'Space Mono'; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+        .series-btn:hover { background: rgba(0, 255, 136, 0.05); transform: translateY(-2px); }
+        .series-btn.active { background: var(--neon-green); color: var(--midnight); border-color: var(--neon-green); box-shadow: 0 8px 20px rgba(0, 255, 136, 0.2); }
+
+        /* --- PROTOCOL CARDS --- */
+        #protocolSelection { display: none; gap: 20px; justify-content: center; margin-bottom: 50px; animation: fadeIn 0.4s ease; }
+        .protocol-option { background: #fff; padding: 25px; border-radius: 20px; width: 260px; border: 2px solid #e2e8f0; cursor: pointer; transition: 0.3s; text-align: center; }
+        .protocol-option:hover { border-color: var(--electric-blue); transform: scale(1.03); }
+        .protocol-option i { font-size: 24px; color: var(--electric-blue); margin-bottom: 12px; }
+        .protocol-option h3 { font-size: 15px; font-weight: 800; color: var(--midnight); margin-bottom: 5px; }
+        .protocol-option p { font-size: 10px; color: var(--silver); font-family: 'Space Mono'; }
+
+        /* --- INPUT INTERFACES --- */
+        .interface-card { background: #fff; padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05); max-width: 600px; margin: 0 auto 100px; display: none; animation: slideUp 0.4s ease; text-align: left; }
+        .input-group { margin-bottom: 25px; }
+        .input-group label { display: block; font-family: 'Space Mono'; font-size: 10px; color: var(--electric-blue); font-weight: 800; margin-bottom: 8px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 15px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #f8fafc; font-size: 14px; outline: none; }
+        .action-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        
+        .footer { background: var(--midnight); color: white; padding: 30px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: auto; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+
+<body>
+
+    <header class="fixed-header">
+        <div class="top-bar">
+            <a href="admin-dashboard.html" class="logo">ELITE<span>ADMIN</span></a>
+            <div style="font-size: 10px; font-family: 'Space Mono'; color: var(--neon-green);">
+                <i class="fas fa-terminal"></i> REPOSITORY_SYNC: ACTIVE
+            </div>
+        </div>
+        <nav class="command-ribbon">
+            <a href="admin-dashboard.html" class="nav-link"><i class="fas fa-th-large"></i> Core</a>
+            <a href="create-mock-test.html" class="nav-link"><i class="fas fa-plus-square"></i> New Mock</a>
+            <a href="Question.html" class="nav-link active"><i class="fas fa-database"></i> Add Question Bank</a>
+            <a href="view-question-bank.html" class="nav-link"><i class="fas fa-book-open"></i> View Question Bank</a>
+            <a href="results.html" class="nav-link"><i class="fas fa-analytics"></i> Analytics</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div style="margin-bottom: 40px;">
+            <h1 style="font-size: 32px; font-weight: 800; color: var(--midnight); letter-spacing: -1.5px;">Intelligence Repository</h1>
+            <p style="color: var(--silver); font-family: 'Space Mono'; font-size: 11px;">CHOOSE SERIES TO INITIALIZE UPLINK PROTOCOL</p>
+        </div>
+
+        <div class="series-row">
+            <button class="series-btn" onclick="selectSeries('JEE Main', this)"><i class="fas fa-atom"></i> JEE MAIN</button>
+            <button class="series-btn" onclick="selectSeries('JEE Advanced', this)"><i class="fas fa-microchip"></i> JEE ADVANCED</button>
+            <button class="series-btn" onclick="selectSeries('NEET', this)"><i class="fas fa-dna"></i> NEET</button>
+            <button class="series-btn" onclick="selectSeries('MHTCET', this)"><i class="fas fa-bolt"></i> MHTCET</button>
+        </div>
+
+        <div id="protocolSelection">
+            <div class="protocol-option" onclick="openInterface('pdf')">
+                <i class="fas fa-file-upload"></i>
+                <h3>PDF Resource</h3>
+                <p>Static document deploy</p>
+            </div>
+            <div class="protocol-option" onclick="openInterface('practice')">
+                <i class="fas fa-brain"></i>
+                <h3>Practice Set</h3>
+                <p>Interactive Question Bank</p>
+            </div>
+            <div class="protocol-option" onclick="openInterface('chapter')">
+                <i class="fas fa-book-reader"></i>
+                <h3>Chapter Bank</h3>
+                <p>Subject-specific modules</p>
+            </div>
+        </div>
+
+        <div id="pdfInterface" class="interface-card">
+            <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 25px; color: var(--midnight);">PDF Deployment: <span id="pdfTag" style="color:var(--electric-blue)">--</span></h2>
+            <div class="input-group"><label>Resource Title</label><input type="text" id="pdfTitle" placeholder="e.g. Organic Chemistry Part 1"></div>
+            <div class="input-group"><label>PDF Binary File</label><input type="file" id="pdfFile" accept="application/pdf"></div>
+            <button onclick="executePdfSync()" id="syncBtn" class="action-btn">Initialize PDF Sync</button>
+        </div>
+
+        <div id="practiceInterface" class="interface-card">
+            <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 25px; color: var(--midnight);">Practice Set: <span id="pracTag" style="color:var(--deep-purple)">--</span></h2>
+            <div class="input-group"><label>Test Designation (Title)</label><input type="text" id="pracTitle" placeholder="e.g. Daily Practice - Physics"></div>
+            <div class="input-group"><label>Time Allocation (Minutes)</label><input type="number" id="pracDuration" value="60"></div>
+            <button onclick="executePracSync()" id="pracBtn" class="action-btn">Initialize & Add Questions</button>
+        </div>
+
+        <div id="chapterInterface" class="interface-card">
+            <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 25px; color: var(--midnight);">Chapter Module: <span id="chapTag" style="color:var(--neon-green)">--</span></h2>
+            <div class="input-group">
+                <label>Subject Vector</label>
+                <select id="chapSubject">
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Maths">Maths</option>
+                    <option value="Biology">Biology</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Chapter Designation (Name)</label>
+                <input type="text" id="chapName" placeholder="e.g. Chemical Bonding">
+            </div>
+            <button onclick="executeChapterSync()" id="chapBtn" class="action-btn" style="background: var(--midnight); border: 2px solid var(--neon-green); color: var(--neon-green);">
+                Create Chapter & Deploy Questions
+            </button>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 READYHAND AI | SYSTEM_ADMIN_PROTOCOL</p>
+    </footer>
+
+    <script>
+        const token = localStorage.getItem("token");
+        let activeSeries = "";
+
+        if (!token) window.location.href = "../login.html";
+
+        function getAuthHeaders() {
+            const cleanToken = token.replace('Bearer ', '').trim();
+            return { "Content-Type": "application/json", "Authorization": `Bearer ${cleanToken}` };
+        }
+
+        function selectSeries(series, btn) {
+            activeSeries = series;
+            document.querySelectorAll('.series-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.getElementById('pdfTag').innerText = series;
+            document.getElementById('pracTag').innerText = series;
+            document.getElementById('chapTag').innerText = series;
+
+            document.getElementById('protocolSelection').style.display = 'flex';
+            document.querySelectorAll('.interface-card').forEach(i => i.style.display = 'none');
+            window.scrollTo({ top: document.getElementById('protocolSelection').offsetTop - 120, behavior: 'smooth' });
+        }
+
+        function openInterface(type) {
+            document.querySelectorAll('.interface-card').forEach(i => i.style.display = 'none');
+            document.getElementById(type + 'Interface').style.display = 'block';
+            window.scrollTo({ top: document.getElementById(type + 'Interface').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        async function executePracSync() {
+            const title = document.getElementById("pracTitle").value.trim();
+            const duration = document.getElementById("pracDuration").value;
+            const btn = document.getElementById("pracBtn");
+
+            if (!title || !duration) return alert("Error: Metadata missing.");
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> UPLINKING...';
+
+            try {
+                const res = await fetch('/api/admin/create-practice-test', {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        examId: "PRAC-" + Date.now(),
+                        title: title,
+                        series: activeSeries,
+                        duration: duration,
+                        subject: "Mixed"
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = `view-question-bank.html?series=${encodeURIComponent(activeSeries)}`;
+                } else {
+                    alert("Sync Error: " + data.message);
+                }
+            } catch (e) {
+                alert("Protocol Failure.");
+                btn.disabled = false;
+            }
+        }
+
+        async function executeChapterSync() {
+            const name = document.getElementById("chapName").value.trim();
+            const subject = document.getElementById("chapSubject").value;
+            const btn = document.getElementById("chapBtn");
+
+            if (!name) return alert("Error: Chapter Name required.");
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> INITIALIZING...';
+
+            try {
+                const res = await fetch('/api/admin/create-chapter', {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        chapter_name: name,
+                        subject: subject,
+                        series: activeSeries
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert("Chapter Created!");
+                    window.location.href = `add-chapter-questions.html?chapterId=${data.id}`;
+                } else {
+                    alert("Sync Error: " + data.message);
+                }
+            } catch (e) {
+                alert("Chapter sync failed.");
+                btn.disabled = false;
+            }
+        }
+
+        async function executePdfSync() {
+            alert("PDF Logic for " + activeSeries + " pending.");
+        }
+    </script>
+</body>
+
+</html>

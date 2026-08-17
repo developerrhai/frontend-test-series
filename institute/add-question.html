@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Editor | Elite Hub</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root { 
+            --electric-blue: #0066FF; --midnight: #0A0E27; --cyber-cyan: #00F5FF; 
+            --light-bg: #f4f7fe; --silver: #64748b; --emerald: #10b981;
+        }
+        
+        * { box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--light-bg); margin: 0; padding-top: 80px; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Standalone Header */
+        .standalone-header {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            background: #fff; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; padding: 0 40px;
+            justify-content: space-between; z-index: 1000;
+        }
+
+        .main-wrapper { max-width: 1400px; margin: 0 auto; padding: 40px 30px; display: grid; grid-template-columns: 1fr 480px; gap: 40px; flex: 1; width: 100%; }
+
+        .entry-card { background: #fff; padding: 45px; border-radius: 35px; border: 1px solid #e2e8f0; box-shadow: 0 25px 60px rgba(0,0,0,0.04); }
+        .form-group { margin-bottom: 25px; position: relative; }
+        label { display: block; font-family: 'Space Mono'; font-size: 11px; font-weight: 800; color: var(--silver); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        textarea, input, select { width: 100%; padding: 16px; border-radius: 15px; border: 2.2px solid #f1f5f9; outline: none; background: #f8fafc; font-family: 'Sora', sans-serif; transition: 0.3s; }
+        textarea:focus, input:focus { border-color: var(--electric-blue); background: #fff; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .correct-checkboxes { display: flex; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 15px; border: 2px solid #f1f5f9; }
+        .vector-item { flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; cursor: pointer; border: 1.5px solid #e2e8f0; font-family: 'Space Mono'; font-weight: 800; background: #fff; transition: 0.2s; }
+        .vector-item input { display: none; }
+        .vector-item:has(input:checked) { background: var(--electric-blue); color: #fff; border-color: var(--electric-blue); }
+
+        .file-box { border: 2.5px dashed var(--silver); padding: 20px; border-radius: 20px; text-align: center; background: #f8fafc; cursor: pointer; }
+        #previewImage { max-width: 100%; max-height: 200px; border-radius: 12px; display: none; margin: 15px auto 0; }
+
+        .preview-hub { position: sticky; top: 110px; height: calc(100vh - 160px); background: var(--midnight); border-radius: 35px; padding: 40px; color: #fff; overflow-y: auto; display: flex; flex-direction: column; }
+        .hub-label { font-family: 'Space Mono'; font-size: 10px; color: var(--cyber-cyan); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; display: block; border-bottom: 1px solid rgba(0,245,255,0.1); padding-bottom: 10px; }
+        .render-box { min-height: 100px; font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #e2e8f0; }
+        .solution-box { padding: 20px; background: rgba(255,255,255,0.03); border-radius: 20px; font-size: 14px; line-height: 1.6; color: #94a3b8; }
+
+        .btn-deploy { width: 100%; background: var(--electric-blue); color: #fff; padding: 20px; border-radius: 18px; border: none; font-weight: 800; cursor: pointer; font-family: 'Space Mono'; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .btn-deploy:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0, 102, 255, 0.2); }
+    </style>
+</head>
+<body>
+
+<header class="standalone-header">
+    <div style="font-weight: 800; font-size: 20px; color: var(--electric-blue);">ELITE_HUB <span style="color: var(--midnight); font-weight: 400;">| TEST_EDITOR</span></div>
+    <button onclick="window.history.back()" style="background: none; border: none; font-family: 'Space Mono'; color: var(--silver); cursor: pointer; font-size: 12px;">
+        <i class="fas fa-arrow-left"></i> EXIT_EDITOR
+    </button>
+</header>
+
+<main class="main-wrapper">
+    <div class="entry-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;">
+            <h2 style="font-weight: 800; color: var(--midnight); margin: 0;"><i class="fas fa-bolt"></i> Test Unit Editor</h2>
+            <div style="font-family:'Space Mono'; font-size:12px; color:var(--silver);">UPLINK_ID: <span id="displayExamId" style="color:var(--electric-blue)">---</span></div>
+        </div>
+
+        <form id="questionForm">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Subject Vector</label>
+                    <select id="subject">
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Maths">Maths</option>
+                        <option value="Biology">Biology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Intelligence Type</label>
+                    <select id="qType" onchange="adjustUIForType()">
+                        <option value="single">Single Choice (MCQ)</option>
+                        <option value="multiple">Multiple Correct (MSQ)</option>
+                        <option value="numerical">Numerical / NAT</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Question Intelligence (Input)</label>
+                <textarea id="questionText" rows="5" placeholder="Enter problem text. Use $$ for block formulas." oninput="updateLivePreview()" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Visual Reference (Base64)</label>
+                <div class="file-box" onclick="document.getElementById('questionImage').click()">
+                    <input type="file" id="questionImage" accept="image/*" style="display: none;">
+                    <span id="fileLabel" style="font-family:'Space Mono'; font-size:11px; color:var(--silver);"><i class="fas fa-cloud-upload-alt"></i> CLICK_TO_ATTACH_IMAGE</span>
+                    <img id="previewImage" src="">
+                </div>
+            </div>
+
+            <div class="options-grid" id="optionsWrapper">
+                <div class="form-group"><label>Option A</label><input type="text" id="optionA"></div>
+                <div class="form-group"><label>Option B</label><input type="text" id="optionB"></div>
+                <div class="form-group"><label>Option C</label><input type="text" id="optionC"></div>
+                <div class="form-group"><label>Option D</label><input type="text" id="optionD"></div>
+            </div>
+
+            <div class="form-group">
+                <label id="vectorLabel">Solution Vector (Key)</label>
+                <div id="answerInputArea">
+                    <select id="correctOption">
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="color: var(--emerald);">Solution Protocol (Explanation)</label>
+                <textarea id="explanation" rows="4" placeholder="Detail derivation here..." oninput="updateLivePreview()"></textarea>
+            </div>
+
+            <button type="submit" class="btn-deploy" id="saveBtn"><i class="fas fa-bolt"></i> Sync to Neural Bank</button>
+        </form>
+    </div>
+
+    <div class="preview-hub">
+        <span class="hub-label">Real-time Rendering</span>
+        <div id="renderArea" class="render-box"><p style="opacity: 0.2;">Awaiting input...</p></div>
+        <span class="hub-label" style="margin-top: auto;">Solution Preview</span>
+        <div id="solutionArea" class="solution-box"><p style="opacity: 0.3;">Derivation preview...</p></div>
+    </div>
+</main>
+
+<script>
+    // --- STANDALONE CONFIGURATION ---
+    const BASE_URL = ""; // Set your domain if API is on a different subdomain
+    const token = localStorage.getItem("token");
+    const examId = new URLSearchParams(location.search).get("id");
+
+    if (!token) window.location.href = "login.html";
+    if (!examId) window.location.href = "my-tests.html";
+    document.getElementById("displayExamId").innerText = examId;
+
+    function adjustUIForType() {
+        const type = document.getElementById("qType").value;
+        const optWrapper = document.getElementById("optionsWrapper");
+        const ansArea = document.getElementById("answerInputArea");
+        const vLabel = document.getElementById("vectorLabel");
+
+        if (type === 'numerical') {
+            optWrapper.style.display = "none";
+            vLabel.innerText = "Scientific Answer (Value)";
+            ansArea.innerHTML = `<input type="text" id="correctOption" placeholder="e.g. 25.5" required>`;
+        } else if (type === 'multiple') {
+            optWrapper.style.display = "grid";
+            vLabel.innerText = "Multi-Vector Selection";
+            ansArea.innerHTML = `
+                <div class="correct-checkboxes">
+                    <label class="vector-item"><input type="checkbox" class="correct-check" value="A"> A</label>
+                    <label class="vector-item"><input type="checkbox" class="correct-check" value="B"> B</label>
+                    <label class="vector-item"><input type="checkbox" class="correct-check" value="C"> C</label>
+                    <label class="vector-item"><input type="checkbox" class="correct-check" value="D"> D</label>
+                </div>`;
+        } else {
+            optWrapper.style.display = "grid";
+            vLabel.innerText = "Solution Vector (Key)";
+            ansArea.innerHTML = `<select id="correctOption"><option value="A">Option A</option><option value="B">Option B</option><option value="C">Option C</option><option value="D">Option D</option></select>`;
+        }
+    }
+
+    document.getElementById("questionImage").onchange = e => {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById("previewImage").src = URL.createObjectURL(file);
+            document.getElementById("previewImage").style.display = "block";
+            document.getElementById("fileLabel").style.display = "none";
+        }
+    };
+
+    const convertToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    };
+
+    function updateLivePreview() {
+        const qText = document.getElementById('questionText').value;
+        const expText = document.getElementById('explanation').value;
+        const renderArea = document.getElementById('renderArea');
+        const solutionArea = document.getElementById('solutionArea');
+        const wrap = (t) => (t.includes('\\') && !t.includes('$')) ? `$$${t}$$` : t;
+        
+        renderArea.innerHTML = qText ? wrap(qText) : '<p style="opacity: 0.2;">Awaiting input...</p>';
+        solutionArea.innerHTML = expText ? wrap(expText) : '<p style="opacity: 0.3;">Derivation preview...</p>';
+        
+        if (window.MathJax) { MathJax.typesetPromise([renderArea, solutionArea]); }
+    }
+
+    document.getElementById("questionForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById("saveBtn");
+        const qType = document.getElementById("qType").value;
+        const fileInput = document.getElementById("questionImage");
+        let imageString = null;
+
+        let finalAnswer = "";
+        if (qType === 'multiple') {
+            finalAnswer = Array.from(document.querySelectorAll('.correct-check:checked')).map(cb => cb.value).join(',');
+        } else {
+            finalAnswer = document.getElementById("correctOption").value;
+        }
+
+        if (!finalAnswer) return alert("Define solution key.");
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SYNCING...';
+
+        try {
+            if (fileInput.files[0]) imageString = await convertToBase64(fileInput.files[0]);
+
+            const payload = {
+                examId: examId,
+                qType: qType,
+                subject: document.getElementById("subject").value,
+                questionText: document.getElementById("questionText").value.trim(),
+                optionA: qType === 'numerical' ? "" : (document.getElementById("optionA").value || "").trim(),
+                optionB: qType === 'numerical' ? "" : (document.getElementById("optionB").value || "").trim(),
+                optionC: qType === 'numerical' ? "" : (document.getElementById("optionC").value || "").trim(),
+                optionD: qType === 'numerical' ? "" : (document.getElementById("optionD").value || "").trim(),
+                correctOption: finalAnswer.trim(),
+                explanation: document.getElementById("explanation").value.trim(),
+                image_base64: imageString
+            };
+
+            const res = await fetch(BASE_URL + '/api/teacher/add-question', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert("✅ Unit Deployed Successfully.");
+                e.target.reset();
+                document.getElementById("previewImage").style.display = "none";
+                document.getElementById("fileLabel").style.display = "block";
+                adjustUIForType();
+                updateLivePreview();
+            } else {
+                alert("Uplink Refused: " + data.message);
+            }
+        } catch (err) { alert("❌ Uplink Failure."); }
+        finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-bolt"></i> Sync to Neural Bank';
+        }
+    };
+</script>
+</body>
+</html>

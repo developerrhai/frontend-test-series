@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        :root {
+            --electric-blue: #0066FF; --deep-purple: #6B2FFF; --cyber-cyan: #00F5FF;
+            --midnight: #0A0E27; --pure-white: #FFFFFF; --light-bg: #f4f7fe; 
+            --text-dark: #1e293b; --silver: #64748b; --neon-green: #00FF88;
+        }
+
+        body { 
+            font-family: 'Sora', sans-serif; 
+            background: var(--light-bg); 
+            padding-top: 120px; /* Space for layout.js header */
+            min-height: 100vh;
+        }
+
+        .dashboard-wrapper { padding: 40px 0 100px; }
+
+        /* --- Subscription Status --- */
+        #subscriptionStatus {
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            margin-bottom: 40px;
+            text-align: center;
+            border: 1.5px solid #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+
+        .profile-header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 25px;
+        }
+
+        .profile-header h2 { font-size: 36px; margin: 0; color: var(--midnight); font-weight: 800; letter-spacing: -1.5px; }
+        .profile-header p {
+            font-family: 'Space Mono', monospace; font-size: 13px; color: var(--silver);
+            text-transform: uppercase; margin-top: 8px; letter-spacing: 1px;
+        }
+
+        .info-row { margin-bottom: 30px; }
+        .info-row label {
+            font-family: 'Space Mono', monospace; font-size: 12px; color: var(--electric-blue); 
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;
+            display: block; font-weight: 800;
+        }
+
+        .info-row input {
+            font-size: 18px; font-weight: 600; color: var(--text-dark);
+            background: #f8fafc; border: 2px solid #e2e8f0;
+            padding: 18px; border-radius: 14px; width: 100%;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .info-row input:focus { border-color: var(--electric-blue); background: #fff; }
+
+        /* Highlight Alphanumeric IDs */
+        .id-field {
+            background: #fdf2ff !important;
+            color: var(--deep-purple) !important;
+            font-weight: 800 !important;
+            border: 2px dashed var(--deep-purple) !important;
+            letter-spacing: 2px;
+        }
+
+        .readonly-field {
+            background: #f1f5f9 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            border: 2px solid #cbd5e1 !important;
+        }
+
+        /* --- Buttons --- */
+        .sync-btn {
+            padding: 20px 50px; border: none; border-radius: 16px;
+            cursor: pointer; font-family: 'Sora', sans-serif;
+            font-weight: 800; font-size: 15px; text-transform: uppercase;
+            letter-spacing: 2px; transition: all 0.3s ease;
+            display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+            background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple));
+            color: #ffffff; box-shadow: 0 10px 25px rgba(0, 102, 255, 0.2);
+        }
+
+        .sync-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4); filter: brightness(1.1); }
+        .sync-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .sync-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="header-container"></div>
+
+<main class="dashboard-wrapper">
+    <div class="container">
+        
+        <div id="subscriptionStatus">
+            <i class="fas fa-satellite-dish fa-spin"></i> INITIALIZING NEURAL UPLINK...
+        </div>
+
+        <section class="dashboard">
+            <div class="profile-header">
+                <h2>Student Identity</h2>
+                <p>Personal Intelligence Profile & Authentication Key</p>
+            </div>
+            
+            <div id="formFields">
+                </div>
+
+            <div style="margin-top: 40px; text-align: right;">
+                <button class="sync-btn" id="saveBtn" onclick="saveProfile()">
+                    <i class="fas fa-sync-alt"></i> Sync Updates
+                </button>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="layout.js"></script>
+
+<script>
+/* ================= STUDENT PROFILE LOGIC ================= */
+const token = localStorage.getItem("token");
+let user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+
+// Security Check
+if (!token) { window.location.href = "../login.html"; }
+
+// Standardized fill function to match your working Institute logic
+function renderStudentProfile() {
+    const p = user;
+    const container = document.getElementById("formFields");
+    
+    updateSubscriptionUI();
+
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;" class="grid-2">
+            <div class="info-row">
+                <label>Unique Student ID</label>
+                <input class="readonly-field id-field" disabled value="${p.id || 'ST-ALPHA'}">
+            </div>
+            <div class="info-row">
+                <label>Linked Institute ID</label>
+                <input class="readonly-field id-field" style="background:#f0f9ff !important; border-color:var(--electric-blue) !important; color:var(--electric-blue) !important;" disabled value="${p.institute_id || 'STANDALONE'}">
+            </div>
+        </div>
+
+        <div class="info-row">
+            <label>Legal Identification Name</label>
+            <input id="full_name" placeholder="Enter Full Legal Name" value="${p.full_name || ''}">
+        </div>
+
+        <div class="info-row">
+            <label>Neural Link (Auth Email)</label>
+            <input class="readonly-field" disabled value="${p.email || ''}">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;" class="grid-2">
+            <div class="info-row">
+                <label>Mobile Protocol</label>
+                <input id="mobile_no" placeholder="Active Mobile Number" value="${p.mobile_no || ''}">
+            </div>
+            <div class="info-row">
+                <label>WhatsApp Sync</label>
+                <input id="whatsapp_no" placeholder="WhatsApp Contact Number" value="${p.whatsapp_no || ''}">
+            </div>
+        </div>
+
+        <div class="info-row">
+            <label>Educational Institution / College</label>
+            <input id="college_name" placeholder="Institution Name" value="${p.college_name || ''}">
+        </div>
+
+        <div class="info-row">
+            <label>Father's Designation Name</label>
+            <input id="father_name" placeholder="Father's Legal Name" value="${p.father_name || ''}">
+        </div>
+
+        <div class="info-row">
+            <label>HQ Physical Address</label>
+            <input id="address" placeholder="Residential Address" value="${p.address || ''}">
+        </div>
+    `;
+}
+
+function updateSubscriptionUI() {
+    const bar = document.getElementById("subscriptionStatus");
+    const plan = user.plan || 'FREE';
+    const expiry = user.expiry_date ? new Date(user.expiry_date) : null;
+    const now = new Date();
+    
+    if (expiry && expiry < now) {
+        bar.innerHTML = `<span style="color:#ef4444; font-weight:800;"><i class="fas fa-lock"></i> SYSTEM ACCESS RESTRICTED: PLAN EXPIRED</span>`;
+    } else {
+        bar.innerHTML = `<i class="fas fa-shield-alt" style="color:var(--electric-blue)"></i> PLAN STATUS: <b style="color:var(--electric-blue)">${plan}</b> ACTIVE`;
+    }
+}
+
+async function saveProfile() {
+    const btn = document.getElementById("saveBtn");
+    const originalHTML = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SYNCING...`;
+
+    const updatedData = {
+        full_name: document.getElementById("full_name").value.trim(),
+        mobile_no: document.getElementById("mobile_no").value.trim(),
+        whatsapp_no: document.getElementById("whatsapp_no").value.trim(),
+        college_name: document.getElementById("college_name").value.trim(),
+        father_name: document.getElementById("father_name").value.trim(),
+        address: document.getElementById("address").value.trim()
+    };
+
+    const apiUrl = (typeof getUrl === 'function') ? getUrl("/api/auth/update-profile") : "/api/auth/update-profile";
+
+    try {
+        const res = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert("✅ Neural Database Synchronized!");
+            // Update local user object and persist to storage
+            user = { ...user, ...updatedData };
+            localStorage.setItem("currentUser", JSON.stringify(user));
+            renderStudentProfile();
+        } else {
+            alert("❌ Sync Denied: " + result.message);
+        }
+    } catch (err) { 
+        console.error(err);
+        alert("⚠️ Transmission Failed. Check Network."); 
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+// Start Initialization
+renderStudentProfile();
+</script>
+
+</body>
+</html>

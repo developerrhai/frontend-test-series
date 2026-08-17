@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Questions | TestSeries</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e40af;
+            --danger: #b91c1c;
+            --bg: #e2e8f0;
+            --card: #ffffff;
+            --border: #94a3b8;
+        }   
+
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #0f172a; }
+
+        .header {
+            background: #0f172a;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .back-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .back-btn:hover { color: white; }
+
+        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+
+        .q-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .subject-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .badge-physics { background: #dbeafe; color: #1e40af; }
+        .badge-chemistry { background: #fef3c7; color: #92400e; }
+        .badge-maths { background: #dcfce7; color: #166534; }
+        .badge-biology { background: #fce7f3; color: #9d174d; }
+
+        .q-text { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .option-item { padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .option-label { font-weight: 800; color: var(--primary); margin-right: 8px; }
+
+        .actions { display: flex; gap: 12px; margin-top: 1.5rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; }
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .btn-edit { background: var(--primary); color: white; }
+        .btn-delete { background: #fee2e2; color: #b91c1c; }
+
+        /* Edit Form Styles */
+        .edit-container { background: white; padding: 2.5rem; border-radius: 12px; border: 3px solid var(--primary); }
+        .input-group { margin-bottom: 1.2rem; }
+        .input-group label { display: block; font-weight: 700; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: #f8fafc; box-sizing: border-box; }
+        
+        .img-preview { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <button class="back-btn" onclick="location.href='my-tests.html'">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </button>
+    <div id="qCount" style="font-weight: 800;">Loading...</div>
+</header>
+
+<div class="container" id="content">
+    <div style="text-align: center; margin-top: 100px;">
+        <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i>
+        <p>Fetching Question Bank...</p>
+    </div>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+const examId = new URLSearchParams(location.search).get("id");
+let questions = [];
+
+const badgeMap = {
+    Physics: "badge-physics",
+    Chemistry: "badge-chemistry",
+    Maths: "badge-maths",
+    Biology: "badge-biology"
+};
+
+async function init() {
+    if (!token || !examId) { location.href = "my-tests.html"; return; }
+    await fetchQuestions();
+}
+
+async function fetchQuestions() {
+    try {
+        // Updated path to match backend: /api/teacher/test/:examId/questions
+        const res = await fetch(`/api/teacher/test/${examId}/questions`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            questions = data.questions || [];
+            document.getElementById("qCount").innerText = `${questions.length} Questions`;
+            renderQuestions();
+        } else {
+            document.getElementById("content").innerHTML = `<h3>${data.message || "Failed to load"}</h3>`;
+        }
+    } catch (err) {
+        console.error(err);
+        document.getElementById("content").innerHTML = `<h3>Error connecting to server</h3>`;
+    }
+}
+
+function renderQuestions() {
+    let html = `<h2><i class="fas fa-list"></i> Question Bank</h2>`;
+    questions.forEach((q, i) => {
+        html += `
+        <div class="q-card">
+            <div style="display:flex; justify-content:space-between">
+                <span class="subject-badge ${badgeMap[q.subject] || ''}">${q.subject}</span>
+                <strong>Q. ${i + 1}</strong>
+            </div>
+            <div class="q-text">${q.question_text}</div>
+            ${q.image_url ? `<img src="${q.image_url}" class="img-preview">` : ""}
+            <div class="options-grid">
+                <div class="option-item"><span class="option-label">A</span> ${q.option_a}</div>
+                <div class="option-item"><span class="option-label">B</span> ${q.option_b}</div>
+                <div class="option-item"><span class="option-label">C</span> ${q.option_c}</div>
+                <div class="option-item"><span class="option-label">D</span> ${q.option_d}</div>
+            </div>
+            <div style="margin-top:15px; color:#15803d; font-weight:bold;">
+                <i class="fas fa-check-circle"></i> Correct: Option ${q.correct_option}
+            </div>
+            <div class="actions">
+                <button class="btn btn-edit" onclick="editQuestion(${q.id})"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn btn-delete" onclick="deleteQuestion(${q.id})"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById("content").innerHTML = html;
+}
+
+function editQuestion(id) {
+    const q = questions.find(x => x.id === id);
+    document.getElementById("content").innerHTML = `
+    <div class="edit-container">
+        <h2><i class="fas fa-pen"></i> Edit Question</h2>
+        <div class="input-group">
+            <label>Subject</label>
+            <select id="edit_subject">
+                ${Object.keys(badgeMap).map(s => `<option ${q.subject === s ? "selected" : ""}>${s}</option>`).join("")}
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Question Statement</label>
+            <textarea id="edit_qText" rows="4">${q.question_text}</textarea>
+        </div>
+        <div class="options-grid">
+            <div class="input-group"><label>Option A</label><input id="edit_o1" value="${q.option_a}"></div>
+            <div class="input-group"><label>Option B</label><input id="edit_o2" value="${q.option_b}"></div>
+            <div class="input-group"><label>Option C</label><input id="edit_o3" value="${q.option_c}"></div>
+            <div class="input-group"><label>Option D</label><input id="edit_o4" value="${q.option_d}"></div>
+        </div>
+        <div class="input-group" style="max-width:200px">
+            <label>Correct Answer</label>
+            <select id="edit_ans">
+                ${["A", "B", "C", "D"].map(o => `<option ${q.correct_option === o ? "selected" : ""}>${o}</option>`).join("")}
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-edit" onclick="saveEdit(${id}, this)">Save Changes</button>
+            <button class="btn" style="background:#ddd" onclick="renderQuestions()">Cancel</button>
+        </div>
+    </div>`;
+    window.scrollTo(0, 0);
+}
+
+async function saveEdit(id, btn) {
+    btn.disabled = true;
+    btn.innerHTML = "Saving...";
+
+    const payload = {
+        subject: document.getElementById("edit_subject").value,
+        question_text: document.getElementById("edit_qText").value,
+        option_a: document.getElementById("edit_o1").value,
+        option_b: document.getElementById("edit_o2").value,
+        option_c: document.getElementById("edit_o3").value,
+        option_d: document.getElementById("edit_o4").value,
+        correct_option: document.getElementById("edit_ans").value
+    };
+
+    try {
+        const res = await fetch(`/api/teacher/update-question/${id}`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert("Updated successfully!");
+            await fetchQuestions();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) { alert("Error saving data"); }
+    finally { btn.disabled = false; btn.innerHTML = "Save Changes"; }
+}
+
+async function deleteQuestion(id) {
+    if (!confirm("Delete this question?")) return;
+    try {
+        const res = await fetch(`/api/teacher/delete-question/${id}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) await fetchQuestions();
+    } catch (err) { alert("Delete failed"); }
+}
+
+init();
+</script>
+</body>
+</html>

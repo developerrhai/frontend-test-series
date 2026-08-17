@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Repository | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root {
+            --electric-blue: #0066FF; --midnight: #0A0E27; --cyber-cyan: #00F5FF;
+            --neon-green: #00FF88; --light-bg: #f4f7fe; --silver: #64748b;
+        }
+
+        body { 
+            font-family: 'Sora', sans-serif; 
+            background: var(--light-bg); 
+            padding-top: 120px; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 30px; flex: 1; }
+
+        /* Sector Navigation */
+        .sector-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .sector-btn { 
+            background: #fff; color: var(--midnight); border: 2.5px solid #e2e8f0;
+            padding: 14px 32px; border-radius: 50px; 
+            font-family: 'Space Mono'; font-weight: 800; font-size: 14px;
+            cursor: pointer; transition: 0.3s; white-space: nowrap;
+        }
+        .sector-btn.active { 
+            background: var(--midnight); color: var(--cyber-cyan); 
+            border-color: var(--cyber-cyan); transform: scale(1.05); 
+            box-shadow: 0 10px 20px rgba(0, 245, 255, 0.2);
+        }
+
+        /* Mode Switcher */
+        .mode-nav { display: flex; justify-content: center; gap: 30px; margin-bottom: 40px; }
+        .mode-btn { background: none; border: none; font-family: 'Space Mono'; font-weight: 800; font-size: 13px; color: var(--silver); text-transform: uppercase; cursor: pointer; padding-bottom: 10px; border-bottom: 3px solid transparent; }
+        .mode-btn.active { color: var(--electric-blue); border-bottom: 3px solid var(--electric-blue); }
+
+        /* Repository Grid */
+        .repo-card { 
+            background: #fff; border-radius: 28px; padding: 40px; 
+            border: 1px solid #e2e8f0; box-shadow: 0 15px 45px rgba(0,0,0,0.05); 
+        }
+
+        /* List Items */
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 25px 0; border-bottom: 1.5px solid #f1f5f9; }
+        .item-row:last-child { border-bottom: none; }
+        .item-info h5 { font-size: 18px; color: var(--midnight); font-weight: 800; margin-bottom: 6px; }
+        .item-info p { font-size: 12px; color: var(--silver); font-family: 'Space Mono'; font-weight: 700; }
+
+        .action-btn { 
+            background: var(--neon-green); color: var(--midnight); 
+            padding: 12px 24px; border-radius: 12px; font-size: 12px; font-weight: 800;
+            border: none; cursor: pointer; text-transform: uppercase; font-family: 'Space Mono';
+            transition: 0.3s; box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+        }
+        .action-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .empty-msg { font-size: 14px; font-family: 'Space Mono'; color: var(--silver); padding: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div id="header-container"></div>
+
+<main class="container">
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 36px; font-weight: 800; color: var(--midnight); letter-spacing: -1px;">Intelligence Repository</h1>
+        <p style="font-size: 14px; font-family: 'Space Mono'; color: var(--silver); margin-top: 10px;">CHOOSE A SECTOR & MODE</p>
+    </div>
+
+    <div class="sector-nav">
+        <button class="sector-btn active" id="defaultBtn" onclick="loadRepository('JEE Main', this)">JEE MAIN</button>
+        <button class="sector-btn" onclick="loadRepository('JEE Advanced', this)">JEE ADVANCED</button>
+        <button class="sector-btn" onclick="loadRepository('NEET', this)">NEET</button>
+        <button class="sector-btn" onclick="loadRepository('MHTCET', this)">MHTCET</button>
+    </div>
+
+    <div class="mode-nav">
+        <button class="mode-btn active" id="modePractice" onclick="setMode('practice', this)">Practice Sets</button>
+        <button class="mode-btn" onclick="setMode('chapters', this)">Chapter-wise</button>
+        <button class="mode-btn" onclick="setMode('pyq', this)">PYQ Bank</button>
+    </div>
+
+    <div class="repo-card">
+        <div id="dataList"></div>
+    </div>
+</main>
+
+<div id="footer-container"></div>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "../login.html";
+
+    let activeSeries = 'JEE Main';
+    let activeMode = 'practice';
+
+    function loadRepository(sector, btn) {
+        activeSeries = sector;
+        document.querySelectorAll('.sector-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        fetchData();
+    }
+
+    function setMode(mode, btn) {
+        activeMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        fetchData();
+    }
+
+    async function fetchData() {
+        const container = document.getElementById("dataList");
+        container.innerHTML = '<p class="empty-msg">SYNCING_DATA...</p>';
+
+        try {
+            let url = "";
+            const seriesEnc = encodeURIComponent(activeSeries);
+            
+            // API calls using direct relative paths (Standalone)
+            if (activeMode === 'practice') url = `/api/student/available-practice-mocks?series=${seriesEnc}&type=practice`;
+            if (activeMode === 'pyq') url = `/api/student/get-pdfs/${seriesEnc}`;
+            if (activeMode === 'chapters') url = `/api/student/get-chapters?series=${seriesEnc}`;
+
+            const res = await fetch(url, { 
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+            renderData(data);
+        } catch (e) { container.innerHTML = '<p class="empty-msg">UPLINK_FAILURE</p>'; }
+    }
+
+    function renderData(data) {
+        const container = document.getElementById("dataList");
+        
+        if (activeMode === 'practice') {
+            container.innerHTML = (data.exams || []).map(t => `
+                <div class="item-row">
+                    <div class="item-info"><h5>${t.title}</h5><p>${t.duration} MINUTES</p></div>
+                    <button class="action-btn" onclick="window.location.href='exam.html?id=${t.id}'">Start</button>
+                    <button class="action-btn" onclick="startPracticeExam('${t.id}')">Start</button>
+                </div>
+            `).join('') || '<p class="empty-msg">NO_PRACTICE_SETS</p>';
+        } 
+        else if (activeMode === 'pyq') {
+            container.innerHTML = (data.pdfs || []).map(p => `
+                <div class="item-row">
+                    <div class="item-info"><h5>${p.title}</h5><p>PDF_RESOURCE</p></div>
+                    <a href="${p.file_path}" target="_blank" class="action-btn" style="text-decoration:none;">Open</a>
+                </div>
+            `).join('') || '<p class="empty-msg">NO_PYQ_ASSETS</p>';
+        } 
+        else if (activeMode === 'chapters') {
+            container.innerHTML = (data.chapters || []).map(c => `
+                <div class="item-row">
+                    <div class="item-info"><h5>${c.chapter_name}</h5><p>${c.subject.toUpperCase()}</p></div>
+                    <button class="action-btn" onclick="window.location.href='exam-permission.html?chapterId=${c.id}'">Enter</button>
+                    <button class="action-btn" onclick="startChapterExam('${c.id}')">Enter</button>
+                </div>
+            `).join('') || '<p class="empty-msg">NO_CHAPTER_MODULES</p>';
+        }
+    }
+
+    window.onload = () => loadRepository('JEE Main', document.getElementById('defaultBtn'));
+
+async function startChapterExam(id) {
+    const token = localStorage.getItem("token");
+
+    try {
+        const res = await fetch(`/api/student/get-chapter-exam/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem("currentExam", JSON.stringify(data.exam));
+            window.location.href = `exam-permission.html?chapterId=${id}`;
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Error loading chapter exam");
+    }
+}
+async function startPracticeExam(id) {
+    const token = localStorage.getItem("token");
+    const btn = event.target;
+
+    const originalText = btn.innerText;
+    btn.innerText = "Loading...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`/api/student/get-exam-details/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error("Server error");
+
+        const data = await res.json();
+
+        if (data.success) {
+            // 🔥 MOST IMPORTANT STEP
+            localStorage.setItem("currentExam", JSON.stringify(data.test || data.exam));
+
+            // redirect properly
+            window.location.href = `exam-permission.html?id=${id}`;
+        } else {
+            alert(data.message || "Access denied");
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to start exam");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function startChapterExam(id) {
+    const token = localStorage.getItem("token");
+
+    try {
+        const res = await fetch(`/api/student/get-chapter-exam/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem("currentExam", JSON.stringify(data.exam));
+            window.location.href = `exam-permission.html?chapterId=${id}`;
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Error loading chapter exam");
+    }
+}
+</script>
+
+<script src="layout.js"></script>
+
+</body>
+</html>

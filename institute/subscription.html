@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Management | TestSeries Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .dashboard-wrapper { padding: 40px 0 120px; max-width: 1150px; margin: 0 auto; }
+        .section-title { text-align: center; margin-bottom: 45px; color: #1e3a8a; font-weight: 800; }
+
+        /* Plans Grid */
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 30px; margin-bottom: 50px; }
+        .plan-card { 
+            background: #fff; padding: 45px 35px; border-radius: 24px; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); text-align: center; 
+            transition: all 0.3s ease; border: 2px solid transparent; 
+            display: flex; flex-direction: column; justify-content: space-between; 
+        }
+        .plan-card:hover { transform: translateY(-8px); border-color: var(--electric-blue); }
+        .plan-card.active-protocol { border-color: var(--electric-blue); background: #f0f7ff; box-shadow: 0 20px 50px rgba(0, 102, 255, 0.1); }
+        
+        .price-tag { font-size: 42px; font-weight: 800; margin: 25px 0; color: var(--electric-blue); font-family: var(--font-display); }
+        .plan-card p { color: #64748b; line-height: 2.2; margin-bottom: 35px; text-align: left; font-size: 14px; }
+
+        /* Status Section */
+        .active-subscription-card { 
+            background: #fff; padding: 40px; border-radius: 24px; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); border-left: 8px solid var(--electric-blue); 
+            margin-bottom: 35px; 
+        }
+        .countdown-timer { 
+            margin-top: 30px; font-size: 22px; font-weight: 800; color: #ef4444; 
+            background: #fff1f2; display: inline-flex; align-items: center; 
+            gap: 12px; padding: 15px 30px; border-radius: 14px; font-family: var(--font-mono); 
+        }
+
+        /* Buttons */
+        .sub-btn { 
+            width: 100%; padding: 18px; background: linear-gradient(135deg, var(--electric-blue), var(--deep-purple)); 
+            color: #fff; border: none; border-radius: 14px; font-size: 14px; 
+            cursor: pointer; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; 
+        }
+        .sub-btn.locked-btn { background: #cbd5e1 !important; cursor: not-allowed; color: #64748b !important; box-shadow: none !important; }
+
+        #createTestBtn { 
+            width: 100%; padding: 22px; font-size: 18px; border: none; border-radius: 16px; 
+            cursor: pointer; background: #10b981; color: #fff; font-weight: 800; 
+            text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); 
+        }
+        #createTestBtn:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<main class="dashboard-wrapper">
+    <h2 class="section-title">Institutional Access Protocol</h2>
+
+    <div class="plans-grid">
+        <div class="plan-card" id="card-basic">
+            <div>
+                <h3>Basic Tier</h3>
+                <div class="price-tag">₹499 <small style="font-size: 14px; color: var(--silver);">/ Mo</small></div>
+                <p>✔ 5 Neural Test Deployments<br>✔ Basic Intelligence Reports<br>✔ Student Assignment</p>
+            </div>
+            <button onclick="subscribe('Basic Plan', 499)" class="sub-btn" id="btn-basic">Initialize</button>
+        </div>
+
+        <div class="plan-card" id="card-pro">
+            <div>
+                <h3>Professional</h3>
+                <div class="price-tag">₹749 <small style="font-size: 14px; color: var(--silver);">/ Mo</small></div>
+                <p>✔ Unlimited Examination Modules<br>✔ Comprehensive Data Analytics<br>✔ Priority Server Support</p>
+            </div>
+            <button onclick="subscribe('Pro Plan', 749)" class="sub-btn" id="btn-pro">Initialize</button>
+        </div>
+
+        <div class="plan-card" id="card-premium">
+            <div>
+                <h3>Elite Intelligence</h3>
+                <div class="price-tag">₹999 <small style="font-size: 14px; color: var(--silver);">/ Mo</small></div>
+                <p>✔ Advanced AI Behavioral Analysis<br>✔ 24/7 Priority Neural Link<br>✔ Visual Performance Matrix</p>
+            </div>
+            <button onclick="subscribe('Premium Plan', 999)" class="sub-btn" id="btn-premium">Initialize</button>
+        </div>
+    </div>
+
+    <div class="active-subscription-card">
+        <h3><i class="fas fa-shield-alt"></i> Active Neural Authorization</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+            <div>
+                <label style="font-family: var(--font-mono); font-size: 11px; color: var(--silver); text-transform: uppercase;">Protocol Level</label>
+                <p style="font-weight: 800; font-size: 20px;" id="activePlan">Decrypting...</p>
+            </div>
+            <div>
+                <label style="font-family: var(--font-mono); font-size: 11px; color: var(--silver); text-transform: uppercase;">Termination Date</label>
+                <p style="font-weight: 800; font-size: 20px;" id="expiryDate">---</p>
+            </div>
+        </div>
+        <div class="countdown-timer" id="countdownBox">Verifying Link...</div>
+    </div>
+
+    <button id="createTestBtn" disabled onclick="location.href='create-test.html'">
+        <i class="fas fa-plus-circle"></i> Open Deployment Command Center
+    </button>
+</main>
+
+<script src="layout.js"></script>
+<script>
+const token = localStorage.getItem("token");
+let user = null;
+
+async function init() {
+    if (!token) { location.href = "../login.html"; return; }
+    await fetchProfile();
+}
+
+async function fetchProfile() {
+    try {
+        const res = await fetch('/api/auth/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) { user = data.user; updateUI(); }
+    } catch (err) { console.error(err); }
+}
+
+function updateUI() {
+    const now = new Date();
+    const expiry = user.expiry_date ? new Date(user.expiry_date) : null;
+    const currentPlan = (user.plan || "Free").toLowerCase();
+    const isPlanActive = expiry && expiry > now;
+    
+    document.getElementById("activePlan").innerText = user.plan || "Free Tier";
+    document.getElementById("expiryDate").innerText = isPlanActive ? expiry.toLocaleDateString() : "No Active Contract";
+
+    const plans = ['basic', 'pro', 'premium'];
+    plans.forEach(p => {
+        const btn = document.getElementById(`btn-${p}`);
+        const card = document.getElementById(`card-${p}`);
+        
+        if (isPlanActive) {
+            if (currentPlan.includes(p)) {
+                btn.innerText = "Current Active Protocol";
+                btn.disabled = true;
+                btn.className = "sub-btn locked-btn";
+                card.classList.add("active-protocol");
+            } else {
+                btn.innerText = "Locked Until Expiry";
+                btn.disabled = true;
+                btn.className = "sub-btn locked-btn";
+            }
+        } else {
+            btn.innerText = "Initialize Protocol";
+            btn.disabled = false;
+            btn.className = "sub-btn";
+        }
+    });
+
+    const createBtn = document.getElementById("createTestBtn");
+    if (isPlanActive && currentPlan !== "free") {
+        createBtn.disabled = false;
+        startCountdown(expiry);
+    } else {
+        document.getElementById("countdownBox").innerHTML = "<i class='fas fa-lock'></i> No active subscription protocols.";
+    }
+}
+
+function startCountdown(expiry) {
+    const box = document.getElementById("countdownBox");
+    const timer = setInterval(() => {
+        const diff = expiry - new Date();
+        if (diff <= 0) { box.innerText = "Protocol Terminated"; clearInterval(timer); return; }
+        const d = Math.floor(diff / (1000*60*60*24)), h = Math.floor((diff/(1000*60*60))%24), m = Math.floor((diff/(1000*60))%60), s = Math.floor((diff/1000)%60);
+        box.innerHTML = `<i class="far fa-clock"></i> ACCESS VALID: ${d}d ${h}h ${m}m ${s}s`;
+    }, 1000);
+}
+
+function subscribe(plan, amount) {
+    localStorage.setItem("selectedPlan", JSON.stringify({ name: plan, amount: amount }));
+    location.href = "payment.html";
+}
+
+init();
+</script>
+</body>
+</html>
