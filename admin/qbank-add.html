@@ -92,40 +92,30 @@
             <div class="grid-2">
                 <div class="form-group">
                     <label>Board</label>
-                    <select id="board" required onchange="loadClasses()">
-                        <option value="">Select Board</option>
-                    </select>
-                    <button type="button" class="add-new-btn" onclick="promptNew('board', 'board')">+ Add New</button>
+                    <input list="board-options" id="board" placeholder="Select or type Board..." required onchange="loadClasses()">
+                    <datalist id="board-options"></datalist>
                 </div>
                 <div class="form-group">
                     <label>Class</label>
-                    <select id="classLevel" required onchange="loadSubjects()">
-                        <option value="">Select Class</option>
-                    </select>
-                    <button type="button" class="add-new-btn" onclick="promptNew('classLevel', 'class')">+ Add New</button>
+                    <input list="board-options-class" id="classLevel" placeholder="Select or type Class..." required onchange="loadSubjects()">
+                    <datalist id="board-options-class"></datalist>
                 </div>
                 <div class="form-group">
                     <label>Subject</label>
-                    <select id="subject" required onchange="loadChapters()">
-                        <option value="">Select Subject</option>
-                    </select>
-                    <button type="button" class="add-new-btn" onclick="promptNew('subject', 'subject')">+ Add New</button>
+                    <input list="board-options-subject" id="subject" placeholder="Select or type Subject..." required onchange="loadChapters()">
+                    <datalist id="board-options-subject"></datalist>
                 </div>
                 <div class="form-group">
                     <label>Chapter</label>
-                    <select id="chapter" required onchange="loadTopics()">
-                        <option value="">Select Chapter</option>
-                    </select>
-                    <button type="button" class="add-new-btn" onclick="promptNew('chapter', 'chapter')">+ Add New</button>
+                    <input list="board-options-chapter" id="chapter" placeholder="Select or type Chapter..." required onchange="loadTopics()">
+                    <datalist id="board-options-chapter"></datalist>
                 </div>
             </div>
             
             <div class="form-group">
                 <label>Topic</label>
-                <select id="topic" required>
-                    <option value="">Select Topic</option>
-                </select>
-                <button type="button" class="add-new-btn" onclick="promptNew('topic', 'topic')">+ Add New</button>
+                <input list="board-options-topic" id="topic" placeholder="Select or type Topic..." required>
+                <datalist id="board-options-topic"></datalist>
             </div>
 
             <!-- Question Details -->
@@ -245,35 +235,35 @@
     async function loadBoards() {
         const res = await fetch(`${API_BASE}/academic/boards`, { headers });
         const data = await res.json();
-        const sel = document.getElementById('board');
-        sel.innerHTML = '<option value="">Select Board</option>';
+        const dl = document.getElementById('board-options');
+        dl.innerHTML = '';
         if (data.boards) {
-            data.boards.forEach(b => sel.innerHTML += `<option value="${b}">${b}</option>`);
+            data.boards.forEach(b => dl.innerHTML += `<option value="${b}">`);
         }
     }
 
     async function loadClasses() {
         const board = document.getElementById('board').value;
-        const sel = document.getElementById('classLevel');
-        sel.innerHTML = '<option value="">Select Class</option>';
+        const dl = document.getElementById('board-options-class');
+        dl.innerHTML = '';
         if (!board) return;
         const res = await fetch(`${API_BASE}/academic/classes?board=${board}`, { headers });
         const data = await res.json();
         if (data.classes) {
-            data.classes.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+            data.classes.forEach(c => dl.innerHTML += `<option value="${c}">`);
         }
     }
 
     async function loadSubjects() {
         const board = document.getElementById('board').value;
         const classLevel = document.getElementById('classLevel').value;
-        const sel = document.getElementById('subject');
-        sel.innerHTML = '<option value="">Select Subject</option>';
+        const dl = document.getElementById('board-options-subject');
+        dl.innerHTML = '';
         if (!classLevel) return;
         const res = await fetch(`${API_BASE}/academic/subjects?board=${board}&classLevel=${classLevel}`, { headers });
         const data = await res.json();
         if (data.subjects) {
-            data.subjects.forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
+            data.subjects.forEach(s => dl.innerHTML += `<option value="${s}">`);
         }
     }
 
@@ -281,13 +271,13 @@
         const board = document.getElementById('board').value;
         const classLevel = document.getElementById('classLevel').value;
         const subject = document.getElementById('subject').value;
-        const sel = document.getElementById('chapter');
-        sel.innerHTML = '<option value="">Select Chapter</option>';
+        const dl = document.getElementById('board-options-chapter');
+        dl.innerHTML = '';
         if (!subject) return;
         const res = await fetch(`${API_BASE}/academic/chapters?board=${board}&classLevel=${classLevel}&subject=${subject}`, { headers });
         const data = await res.json();
         if (data.chapters) {
-            data.chapters.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+            data.chapters.forEach(c => dl.innerHTML += `<option value="${c}">`);
         }
     }
 
@@ -296,26 +286,13 @@
         const classLevel = document.getElementById('classLevel').value;
         const subject = document.getElementById('subject').value;
         const chapter = document.getElementById('chapter').value;
-        const sel = document.getElementById('topic');
-        sel.innerHTML = '<option value="">Select Topic</option>';
+        const dl = document.getElementById('board-options-topic');
+        dl.innerHTML = '';
         if (!chapter) return;
         const res = await fetch(`${API_BASE}/academic/topics?board=${board}&classLevel=${classLevel}&subject=${subject}&chapter=${chapter}`, { headers });
         const data = await res.json();
         if (data.topics) {
-            data.topics.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
-        }
-    }
-
-    function promptNew(selectId, name) {
-        const val = prompt(`Enter new ${name}:`);
-        if (val) {
-            const sel = document.getElementById(selectId);
-            sel.innerHTML += `<option value="${val}" selected>${val}</option>`;
-            // Trigger next load
-            if (selectId === 'board') loadClasses();
-            if (selectId === 'classLevel') loadSubjects();
-            if (selectId === 'subject') loadChapters();
-            if (selectId === 'chapter') loadTopics();
+            data.topics.forEach(t => dl.innerHTML += `<option value="${t}">`);
         }
     }
 
