@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Paper Builder | Elite Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="../config.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root { 
+            --electric-blue: #0066FF; --midnight: #0A0E27; --cyber-cyan: #00F5FF; 
+            --neon-green: #00FF88; --light-bg: #f4f7fe; --silver: #64748b; 
+        }
+        
+        * { box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--light-bg); margin: 0; padding-top: 80px; min-height: 100vh; }
+        
+        .standalone-header {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            background: #fff; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; padding: 0 40px;
+            justify-content: space-between; z-index: 1000;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 30px; }
+
+        /* Wizard Progress */
+        .wizard-steps { display: flex; justify-content: space-between; margin-bottom: 40px; position: relative; }
+        .wizard-steps::before { content: ''; position: absolute; top: 20px; left: 0; width: 100%; height: 2px; background: #e2e8f0; z-index: 1; }
+        .step { position: relative; z-index: 2; text-align: center; flex: 1; }
+        .step-circle { width: 40px; height: 40px; background: #fff; border: 2px solid #e2e8f0; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--silver); transition: 0.3s; }
+        .step.active .step-circle { border-color: var(--electric-blue); background: var(--electric-blue); color: #fff; box-shadow: 0 0 15px rgba(0,102,255,0.3); }
+        .step.completed .step-circle { border-color: var(--neon-green); background: var(--neon-green); color: var(--midnight); }
+        .step-label { font-family: 'Space Mono'; font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--silver); }
+        .step.active .step-label { color: var(--midnight); }
+
+        .step-content { display: none; background: #fff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
+        .step-content.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 25px; }
+        label { display: block; font-family: 'Space Mono'; font-size: 11px; font-weight: 800; color: var(--silver); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        input, select, textarea { width: 100%; padding: 15px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-family: 'Sora'; font-size: 14px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--electric-blue); }
+
+        .btn { padding: 15px 30px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Space Mono'; text-transform: uppercase; font-size: 12px; transition: 0.3s; border: none; }
+        .btn-primary { background: var(--electric-blue); color: #fff; }
+        .btn-primary:hover { box-shadow: 0 10px 20px rgba(0,102,255,0.2); transform: translateY(-2px); }
+        .btn-secondary { background: var(--midnight); color: var(--cyber-cyan); }
+        
+        .wizard-actions { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+
+        /* Blueprint Section */
+        .section-box { border: 1.5px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; position: relative; }
+        .section-box h4 { margin: 0 0 15px 0; font-size: 16px; color: var(--midnight); display: flex; justify-content: space-between; align-items: center; }
+        .remove-sec { background: #fee2e2; color: #dc2626; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+
+        /* Review Section */
+        .q-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .q-header { display: flex; justify-content: space-between; align-items: center; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-family: 'Space Mono'; font-size: 10px; font-weight: bold; background: #f0f7ff; color: var(--electric-blue); }
+        .swap-btn { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: 'Space Mono'; font-size: 10px; font-weight: bold; }
+        .swap-btn:hover { background: #fef3c7; }
+
+        /* Swap Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 20px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; }
+        .alt-q { border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .alt-q:hover { border-color: var(--electric-blue); background: #f8fafc; }
+    </style>
+</head>
+<body>
+
+<header class="standalone-header">
+    <div style="font-weight: 800; font-size: 20px; color: var(--electric-blue);">PAPER <span style="color: var(--midnight); font-weight: 400;">| BUILDER WIZARD</span></div>
+    <button onclick="window.history.back()" style="background: none; border: none; font-family: 'Space Mono'; color: var(--silver); cursor: pointer; font-size: 12px;">
+        <i class="fas fa-arrow-left"></i> EXIT WIZARD
+    </button>
+</header>
+
+<main class="container">
+    <div class="wizard-steps">
+        <div class="step active" id="stepIndicator1">
+            <div class="step-circle">1</div>
+            <div class="step-label">Details</div>
+        </div>
+        <div class="step" id="stepIndicator2">
+            <div class="step-circle">2</div>
+            <div class="step-label">Blueprint</div>
+        </div>
+        <div class="step" id="stepIndicator3">
+            <div class="step-circle">3</div>
+            <div class="step-label">Review</div>
+        </div>
+        <div class="step" id="stepIndicator4">
+            <div class="step-circle">4</div>
+            <div class="step-label">Export</div>
+        </div>
+    </div>
+
+    <!-- STEP 1: Details -->
+    <div class="step-content active" id="step1">
+        <h2 style="margin-top: 0;">Paper Parameters</h2>
+        <div class="form-group">
+            <label>Paper Title</label>
+            <input type="text" id="paperTitle" placeholder="e.g., JEE Advanced Full Mock 1" required>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="paperDesc" rows="2" placeholder="Brief description of the test..."></textarea>
+        </div>
+        <div class="grid-3">
+            <div class="form-group">
+                <label>Board</label>
+                <select id="board" onchange="loadClasses()"><option value="">Select Board</option></select>
+            </div>
+            <div class="form-group">
+                <label>Class</label>
+                <select id="classLevel" onchange="loadSubjects()"><option value="">Select Class</option></select>
+            </div>
+            <div class="form-group">
+                <label>Total Duration (Mins)</label>
+                <input type="number" id="duration" value="180">
+            </div>
+        </div>
+        <div class="wizard-actions">
+            <div></div>
+            <button class="btn btn-primary" onclick="nextStep(2)">Configure Blueprint <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- STEP 2: Blueprint -->
+    <div class="step-content" id="step2">
+        <h2 style="margin-top: 0;">Design Blueprint</h2>
+        <p style="color: var(--silver); font-size: 14px;">Define the sections and question distribution.</p>
+        
+        <div id="sectionsContainer"></div>
+        
+        <button class="btn btn-secondary" onclick="addSection()" style="margin-bottom: 20px;">+ ADD SECTION</button>
+
+        <div class="wizard-actions">
+            <button class="btn" onclick="prevStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-primary" onclick="generatePaper()">GENERATE PAPER <i class="fas fa-magic"></i></button>
+        </div>
+    </div>
+
+    <!-- STEP 3: Review -->
+    <div class="step-content" id="step3">
+        <h2 style="margin-top: 0;">Review & Refine</h2>
+        <p style="color: var(--silver); font-size: 14px;">Review AI-selected questions. Swap them if necessary.</p>
+        
+        <div id="reviewContainer"></div>
+
+        <div class="wizard-actions">
+            <button class="btn" onclick="prevStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn btn-primary" onclick="finalizePaper()">FINALIZE & PROCEED <i class="fas fa-check"></i></button>
+        </div>
+    </div>
+
+    <!-- STEP 4: Export -->
+    <div class="step-content" id="step4">
+        <div style="text-align: center; padding: 40px 0;">
+            <i class="fas fa-check-circle" style="font-size: 60px; color: var(--neon-green); margin-bottom: 20px;"></i>
+            <h2 style="margin: 0 0 10px 0;">Paper Generated Successfully!</h2>
+            <p style="color: var(--silver);">The paper is locked and ready for distribution.</p>
+            
+            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 40px;">
+                <button class="btn btn-primary" onclick="exportPdf()"><i class="fas fa-file-pdf"></i> Download Question PDF</button>
+                <button class="btn btn-secondary" onclick="exportSolutionPdf()"><i class="fas fa-file-pdf"></i> Download Solution Key</button>
+                <button class="btn" style="background:#e2e8f0;" onclick="window.location.href='admin-dashboard.html'">Go to Dashboard</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Swap Modal -->
+<div class="modal" id="swapModal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>Select Alternative Question</h3>
+            <button style="background: none; border: none; font-size: 20px; cursor: pointer;" onclick="closeSwapModal()">&times;</button>
+        </div>
+        <div id="alternativesList">Loading alternatives...</div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.location.origin + '/api';
+    const token = localStorage.getItem("adminToken");
+    if (!token) window.location.href = "login.html";
+    const headers = { 'Content-Type': 'application/json', 'Authorization': \`Bearer \${token}\` };
+
+    let currentPaperUuid = null;
+    let paperData = null;
+    let sectionCount = 0;
+    let currentSwapInfo = null;
+
+    // --- Wizard Logic ---
+    function nextStep(step) {
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(\`step\${step}\`).classList.add('active');
+        document.getElementById(\`stepIndicator\${step}\`).classList.add('active');
+        for(let i=1; i<step; i++) { document.getElementById(\`stepIndicator\${i}\`).classList.add('completed'); }
+    }
+    
+    function prevStep(step) {
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.step').forEach(el => {
+            el.classList.remove('active');
+            if(parseInt(el.id.replace('stepIndicator','')) >= step) el.classList.remove('completed');
+        });
+        
+        document.getElementById(\`step\${step}\`).classList.add('active');
+        document.getElementById(\`stepIndicator\${step}\`).classList.add('active');
+    }
+
+    // --- Academic Loaders ---
+    async function loadAcademicDropdowns() {
+        const res = await fetch(\`\${API_BASE}/qbank/academic/boards\`, { headers });
+        const data = await res.json();
+        const sel = document.getElementById('board');
+        if (data.boards) data.boards.forEach(b => sel.innerHTML += \`<option value="\${b}">\${b}</option>\`);
+    }
+
+    async function loadClasses() {
+        const board = document.getElementById('board').value;
+        const sel = document.getElementById('classLevel');
+        sel.innerHTML = '<option value="">Select Class</option>';
+        if(!board) return;
+        const res = await fetch(\`\${API_BASE}/qbank/academic/classes?board=\${board}\`, { headers });
+        const data = await res.json();
+        if (data.classes) data.classes.forEach(c => sel.innerHTML += \`<option value="\${c}">\${c}</option>\`);
+    }
+
+    async function loadSubjects() {
+        const board = document.getElementById('board').value;
+        const classLvl = document.getElementById('classLevel').value;
+        // Used in blueprint sections
+        return fetch(\`\${API_BASE}/qbank/academic/subjects?board=\${board}&classLevel=\${classLvl}\`, { headers })
+            .then(r => r.json());
+    }
+
+    // --- Blueprint Logic ---
+    async function addSection() {
+        sectionCount++;
+        const id = sectionCount;
+        const html = \`
+            <div class="section-box" id="sec-\${id}">
+                <h4>Section \${id} <button class="remove-sec" onclick="document.getElementById('sec-\${id}').remove()">Remove</button></h4>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label>Section Name</label>
+                        <input type="text" class="sec-name" value="Section \${id}">
+                    </div>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select class="sec-subject" id="sec-sub-\${id}" onchange="loadChaps(\${id})"><option value="">Select Subject</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Chapter</label>
+                        <select class="sec-chapter" id="sec-chap-\${id}" onchange="loadTops(\${id})"><option value="">All Chapters</option></select>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label>Topic</label>
+                        <select class="sec-topic" id="sec-top-\${id}"><option value="">All Topics</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Difficulty</label>
+                        <select class="sec-diff">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Questions</label>
+                        <input type="number" class="sec-qty" value="5" min="1">
+                    </div>
+                </div>
+            </div>
+        \`;
+        document.getElementById('sectionsContainer').insertAdjacentHTML('beforeend', html);
+        
+        // Populate subject dropdown for this section
+        const subData = await loadSubjects();
+        const sel = document.getElementById(\`sec-sub-\${id}\`);
+        if(subData && subData.subjects) {
+            subData.subjects.forEach(s => sel.innerHTML += \`<option value="\${s}">\${s}</option>\`);
+        }
+    }
+
+    async function loadChaps(id) {
+        const board = document.getElementById('board').value;
+        const classLvl = document.getElementById('classLevel').value;
+        const subj = document.getElementById(\`sec-sub-\${id}\`).value;
+        const sel = document.getElementById(\`sec-chap-\${id}\`);
+        sel.innerHTML = '<option value="">All Chapters</option>';
+        if(!subj) return;
+        const res = await fetch(\`\${API_BASE}/qbank/academic/chapters?board=\${board}&classLevel=\${classLvl}&subject=\${subj}\`, { headers });
+        const data = await res.json();
+        if (data.chapters) data.chapters.forEach(c => sel.innerHTML += \`<option value="\${c}">\${c}</option>\`);
+    }
+
+    async function loadTops(id) {
+        const board = document.getElementById('board').value;
+        const classLvl = document.getElementById('classLevel').value;
+        const subj = document.getElementById(\`sec-sub-\${id}\`).value;
+        const chap = document.getElementById(\`sec-chap-\${id}\`).value;
+        const sel = document.getElementById(\`sec-top-\${id}\`);
+        sel.innerHTML = '<option value="">All Topics</option>';
+        if(!chap) return;
+        const res = await fetch(\`\${API_BASE}/qbank/academic/topics?board=\${board}&classLevel=\${classLvl}&subject=\${subj}&chapter=\${chap}\`, { headers });
+        const data = await res.json();
+        if (data.topics) data.topics.forEach(c => sel.innerHTML += \`<option value="\${c}">\${c}</option>\`);
+    }
+
+    // --- Generate Paper ---
+    async function generatePaper() {
+        const title = document.getElementById('paperTitle').value;
+        if(!title) return alert("Paper title required");
+
+        const sections = Array.from(document.querySelectorAll('.section-box')).map(el => {
+            return {
+                section_name: el.querySelector('.sec-name').value,
+                subject: el.querySelector('.sec-subject').value,
+                chapter: el.querySelector('.sec-chapter').value || null,
+                topic: el.querySelector('.sec-topic').value || null,
+                difficulty: el.querySelector('.sec-diff').value,
+                question_count: parseInt(el.querySelector('.sec-qty').value)
+            };
+        });
+
+        if(sections.length === 0) return alert("Add at least one section");
+        
+        // Scope logic: Admin can pull from global.
+        const payload = {
+            title,
+            description: document.getElementById('paperDesc').value,
+            board: document.getElementById('board').value,
+            classLevel: document.getElementById('classLevel').value,
+            durationMins: document.getElementById('duration').value,
+            scopeContext: 'global', // Admin defaults to global + anything
+            sections
+        };
+
+        const res = await fetch(\`\${API_BASE}/papers/generate\`, {
+            method: 'POST', headers, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if(data.success) {
+            currentPaperUuid = data.paper_uuid;
+            await loadReview();
+            nextStep(3);
+        } else {
+            alert(data.message || "Failed to generate paper");
+        }
+    }
+
+    async function loadReview() {
+        const res = await fetch(`${API_BASE}/papers/${currentPaperUuid}`, { headers });
+        const data = await res.json();
+        paperData = data.paper;
+        
+        let html = '';
+        paperData.sections.forEach(sec => {
+            html += `<h3 style="margin-top: 30px; border-bottom: 2px solid var(--electric-blue); padding-bottom: 5px;">${sec.section_name}</h3>`;
+            sec.questions.forEach((q, idx) => {
+                html += \`
+                    <div class="q-card">
+                        <div class="q-header">
+                            <div><span style="font-weight:bold; color:var(--midnight);">Q\${idx+1}.</span> <span class="badge">\${q.difficulty}</span> <span class="badge">\${q.marks}M</span></div>
+                            <button class="swap-btn" onclick="openSwapModal('\${sec.id}', '\${q.question_uuid}')"><i class="fas fa-sync-alt"></i> SWAP</button>
+                        </div>
+                        <div>\${q.question_text}</div>
+                    </div>
+                \`;
+            });
+        });
+        document.getElementById('reviewContainer').innerHTML = html;
+        if (window.MathJax) MathJax.typesetPromise();
+    }
+
+    // --- Swap Logic ---
+    async function openSwapModal(sectionUuid, questionUuid) {
+        currentSwapInfo = { sectionUuid, questionUuid };
+        document.getElementById('swapModal').style.display = 'flex';
+        document.getElementById('alternativesList').innerHTML = 'Loading alternatives...';
+        
+        const res = await fetch(\`\${API_BASE}/qbank/questions/alternatives?paper_uuid=\${currentPaperUuid}&section_uuid=\${sectionUuid}&question_uuid=\${questionUuid}&scope_context=global\`, { headers });
+        const data = await res.json();
+        
+        if(data.success && data.alternatives.length > 0) {
+            document.getElementById('alternativesList').innerHTML = data.alternatives.map(q => \`
+                <div class="alt-q" onclick="confirmSwap('\${q.question_uuid}')">
+                    <div style="font-size:12px; color:var(--silver); margin-bottom:5px;">\${q.subject} > \${q.chapter}</div>
+                    <div>\${q.question_text}</div>
+                </div>
+            \`).join('');
+            if (window.MathJax) MathJax.typesetPromise();
+        } else {
+            document.getElementById('alternativesList').innerHTML = '<p>No matching alternatives found in the bank.</p>';
+        }
+    }
+    
+    function closeSwapModal() { document.getElementById('swapModal').style.display = 'none'; }
+
+    async function confirmSwap(newQuestionUuid) {
+        const payload = {
+            section_uuid: currentSwapInfo.sectionUuid,
+            old_question_uuid: currentSwapInfo.questionUuid,
+            new_question_uuid: newQuestionUuid
+        };
+        const res = await fetch(\`\${API_BASE}/papers/\${currentPaperUuid}/swap\`, {
+            method: 'PUT', headers, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if(data.success) {
+            closeSwapModal();
+            loadReview(); // Reload review view
+        } else {
+            alert(data.message);
+        }
+    }
+
+    // --- Finalize ---
+    async function finalizePaper() {
+        const res = await fetch(\`\${API_BASE}/papers/\${currentPaperUuid}/finalize\`, {
+            method: 'PUT', headers
+        });
+        const data = await res.json();
+        if(data.success) {
+            nextStep(4);
+        }
+    }
+
+    function exportPdf() {
+        window.open(\`\${API_BASE}/papers/\${currentPaperUuid}/export-pdf?token=\${token}&mode=question\`, '_blank');
+    }
+    function exportSolutionPdf() {
+        window.open(\`\${API_BASE}/papers/\${currentPaperUuid}/export-pdf?token=\${token}&mode=solution\`, '_blank');
+    }
+
+    loadAcademicDropdowns();
+</script>
+</body>
+</html>

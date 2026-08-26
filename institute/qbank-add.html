@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Institute Question | Elite Hub</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="../config.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root { 
+            --electric-blue: #0066FF; --midnight: #0A0E27; --cyber-cyan: #00F5FF; 
+            --neon-green: #00FF88; --light-bg: #f4f7fe; --silver: #64748b; 
+        }
+        
+        * { box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--light-bg); margin: 0; padding-top: 80px; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Standalone Header */
+        .standalone-header {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            background: #fff; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; padding: 0 40px;
+            justify-content: space-between; z-index: 1000;
+        }
+
+        .main-wrapper { max-width: 1400px; margin: 0 auto; padding: 40px 30px; display: grid; grid-template-columns: 1fr 480px; gap: 40px; flex: 1; width: 100%; }
+
+        /* --- Input Side --- */
+        .entry-card { background: #fff; padding: 45px; border-radius: 35px; border: 1px solid #e2e8f0; box-shadow: 0 25px 60px rgba(0,0,0,0.04); }
+        .form-group { margin-bottom: 25px; position: relative; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        label { display: block; font-family: 'Space Mono'; font-size: 11px; font-weight: 800; color: var(--silver); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        textarea, input, select { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f1f5f9; outline: none; background: #f8fafc; font-family: 'Sora', sans-serif; transition: 0.3s; font-size: 14px; }
+        textarea:focus, input:focus, select:focus { border-color: var(--electric-blue); background: #fff; }
+
+        /* LaTeX Help Button & Tooltip */
+        .latex-help-btn { 
+            position: absolute; right: 0; top: 0; background: #f0f7ff; color: var(--electric-blue); 
+            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-size: 11px; cursor: help; border: 1.5px solid #c7d2fe; z-index: 10;
+        }
+        .latex-tooltip { 
+            position: absolute; right: 0; top: 35px; width: 250px; background: var(--midnight); 
+            color: #fff; padding: 20px; border-radius: 15px; visibility: hidden; opacity: 0; 
+            transition: 0.3s; z-index: 100; font-family: 'Space Mono'; font-size: 11px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); pointer-events: none;
+        }
+        .latex-help-btn:hover + .latex-tooltip { visibility: visible; opacity: 1; transform: translateY(5px); }
+        .latex-tooltip code { color: var(--cyber-cyan); display: block; margin-bottom: 6px; }
+
+        /* Image Upload Box */
+        .file-upload-wrapper { border: 2.5px dashed #cbd5e1; padding: 20px; border-radius: 18px; text-align: center; background: #f8fafc; margin-bottom: 20px; cursor: pointer; }
+        #previewImage { max-width: 100%; max-height: 200px; border-radius: 12px; display: none; margin: 15px auto 0; border: 1px solid #e2e8f0; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .option-input-wrapper { position: relative; }
+        .option-checkbox { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; cursor: pointer; }
+
+        /* Preview Hub */
+        .preview-hub { position: sticky; top: 110px; height: calc(100vh - 160px); background: var(--midnight); border-radius: 35px; padding: 40px; color: #fff; overflow-y: auto; display: flex; flex-direction: column; }
+        .hub-label { font-family: 'Space Mono'; font-size: 10px; color: var(--cyber-cyan); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; display: block; border-bottom: 1px solid rgba(0,245,255,0.1); padding-bottom: 10px; }
+        .render-box { min-height: 100px; font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #e2e8f0; }
+        .solution-box { padding: 20px; background: rgba(255,255,255,0.03); border-radius: 20px; font-size: 14px; line-height: 1.6; color: #94a3b8; }
+
+        .btn-deploy { width: 100%; background: var(--midnight); color: var(--cyber-cyan); padding: 22px; border-radius: 20px; border: 1px solid var(--cyber-cyan); font-weight: 800; cursor: pointer; font-family: 'Space Mono'; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; margin-top: 20px; }
+        .btn-deploy:hover { background: var(--electric-blue); color: #fff; transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0, 102, 255, 0.2); }
+        
+        .add-new-btn { background: none; border: none; color: var(--electric-blue); font-size: 11px; font-family: 'Space Mono'; cursor: pointer; font-weight: bold; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<header class="standalone-header">
+    <div style="font-weight: 800; font-size: 20px; color: var(--electric-blue);">Q-BANK <span style="color: var(--midnight); font-weight: 400;">| ADD QUESTION (INSTITUTE)</span></div>
+    <button onclick="window.history.back()" style="background: none; border: none; font-family: 'Space Mono'; color: var(--silver); cursor: pointer; font-size: 12px;">
+        <i class="fas fa-arrow-left"></i> BACK
+    </button>
+</header>
+
+<main class="main-wrapper">
+    <div class="entry-card">
+        <form id="qForm">
+            <!-- Academic Structure -->
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Board</label>
+                    <select id="board" required onchange="loadClasses()">
+                        <option value="">Select Board</option>
+                    </select>
+                    <button type="button" class="add-new-btn" onclick="promptNew('board', 'board')">+ Add New</button>
+                </div>
+                <div class="form-group">
+                    <label>Class</label>
+                    <select id="classLevel" required onchange="loadSubjects()">
+                        <option value="">Select Class</option>
+                    </select>
+                    <button type="button" class="add-new-btn" onclick="promptNew('classLevel', 'class')">+ Add New</button>
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <select id="subject" required onchange="loadChapters()">
+                        <option value="">Select Subject</option>
+                    </select>
+                    <button type="button" class="add-new-btn" onclick="promptNew('subject', 'subject')">+ Add New</button>
+                </div>
+                <div class="form-group">
+                    <label>Chapter</label>
+                    <select id="chapter" required onchange="loadTopics()">
+                        <option value="">Select Chapter</option>
+                    </select>
+                    <button type="button" class="add-new-btn" onclick="promptNew('chapter', 'chapter')">+ Add New</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Topic</label>
+                <select id="topic" required>
+                    <option value="">Select Topic</option>
+                </select>
+                <button type="button" class="add-new-btn" onclick="promptNew('topic', 'topic')">+ Add New</button>
+            </div>
+
+            <!-- Question Details -->
+            <div class="form-group">
+                <label>Question Text (Input)</label>
+                <div class="latex-help-btn"><i class="fas fa-terminal"></i></div>
+                <div class="latex-tooltip">
+                    <b style="color: var(--cyber-cyan)">FORMULA SYNTAX:</b><br><br>
+                    <code>$x^2$</code> Inline Math<br>
+                    <code>$$\frac{a}{b}$$</code> Block Fraction
+                </div>
+                <textarea id="qText" rows="4" placeholder="Enter question. Use $$ for block formulas." oninput="updateLivePreview()" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Visual Reference (Base64 Upload)</label>
+                <div class="file-upload-wrapper" onclick="document.getElementById('questionImage').click()">
+                    <input type="file" id="questionImage" accept="image/*" style="display: none;">
+                    <span id="fileLabel" style="font-family: 'Space Mono'; font-size: 11px; color: var(--silver);"><i class="fas fa-cloud-upload-alt"></i> ATTACH_IMAGE_PAYLOAD</span>
+                    <img id="previewImage" src="">
+                </div>
+            </div>
+
+            <div class="options-grid">
+                <div class="form-group option-input-wrapper">
+                    <label>Option A (Check if correct)</label>
+                    <input type="text" id="optA" required>
+                    <input type="checkbox" id="checkA" class="option-checkbox" title="Mark as correct">
+                </div>
+                <div class="form-group option-input-wrapper">
+                    <label>Option B (Check if correct)</label>
+                    <input type="text" id="optB" required>
+                    <input type="checkbox" id="checkB" class="option-checkbox" title="Mark as correct">
+                </div>
+                <div class="form-group option-input-wrapper">
+                    <label>Option C (Check if correct)</label>
+                    <input type="text" id="optC" required>
+                    <input type="checkbox" id="checkC" class="option-checkbox" title="Mark as correct">
+                </div>
+                <div class="form-group option-input-wrapper">
+                    <label>Option D (Check if correct)</label>
+                    <input type="text" id="optD" required>
+                    <input type="checkbox" id="checkD" class="option-checkbox" title="Mark as correct">
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Difficulty</label>
+                    <select id="difficulty" required>
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Avg Solve Time (Minutes)</label>
+                    <input type="number" id="avgSolveTime" step="0.5" value="2.0" required>
+                </div>
+                <div class="form-group">
+                    <label>Marks (+)</label>
+                    <input type="number" id="marks" step="1" value="4" required>
+                </div>
+                <div class="form-group">
+                    <label>Negative Marks (-)</label>
+                    <input type="number" id="negativeMarks" step="0.25" value="1" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Source / Reference (Optional)</label>
+                <input type="text" id="source" placeholder="e.g. Test series 1">
+            </div>
+
+            <div class="form-group">
+                <label>Scope</label>
+                <select id="scope" disabled>
+                    <option value="institute" selected>Institute (Private)</option>
+                </select>
+                <small style="color: var(--silver); font-size: 10px; font-family: 'Space Mono';">Questions created here are visible only to your institute.</small>
+            </div>
+
+            <div class="form-group">
+                <label>Solution Protocol</label>
+                <textarea id="explanation" rows="4" placeholder="Detail derivation here..." oninput="updateLivePreview()"></textarea>
+            </div>
+
+            <button type="submit" class="btn-deploy" id="saveBtn">SYNC TO BANK</button>
+        </form>
+    </div>
+
+    <div class="preview-hub">
+        <span class="hub-label">Question Rendering</span>
+        <div id="renderArea" class="render-box">
+            <p style="color: rgba(255,255,255,0.2);">Awaiting input sequence...</p>
+        </div>
+        
+        <span class="hub-label" style="margin-top: auto;">Derivation Sequence</span>
+        <div id="solutionArea" class="solution-box">
+            <p style="opacity: 0.3;">Solution preview...</p>
+        </div>
+    </div>
+</main>
+
+<script>
+    const API_BASE = window.location.origin + '/api/qbank';
+    const token = localStorage.getItem("token"); // Institute token
+
+    if (!token) window.location.href = "login.html";
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': \`Bearer \${token}\`
+    };
+
+    // Load structure
+    async function loadBoards() {
+        const res = await fetch(\`\${API_BASE}/academic/boards\`, { headers });
+        const data = await res.json();
+        const sel = document.getElementById('board');
+        sel.innerHTML = '<option value="">Select Board</option>';
+        if (data.boards) {
+            data.boards.forEach(b => sel.innerHTML += \`<option value="\${b}">\${b}</option>\`);
+        }
+    }
+
+    async function loadClasses() {
+        const board = document.getElementById('board').value;
+        const sel = document.getElementById('classLevel');
+        sel.innerHTML = '<option value="">Select Class</option>';
+        if (!board) return;
+        const res = await fetch(\`\${API_BASE}/academic/classes?board=\${board}\`, { headers });
+        const data = await res.json();
+        if (data.classes) {
+            data.classes.forEach(c => sel.innerHTML += \`<option value="\${c}">\${c}</option>\`);
+        }
+    }
+
+    async function loadSubjects() {
+        const board = document.getElementById('board').value;
+        const classLevel = document.getElementById('classLevel').value;
+        const sel = document.getElementById('subject');
+        sel.innerHTML = '<option value="">Select Subject</option>';
+        if (!classLevel) return;
+        const res = await fetch(\`\${API_BASE}/academic/subjects?board=\${board}&classLevel=\${classLevel}\`, { headers });
+        const data = await res.json();
+        if (data.subjects) {
+            data.subjects.forEach(s => sel.innerHTML += \`<option value="\${s}">\${s}</option>\`);
+        }
+    }
+
+    async function loadChapters() {
+        const board = document.getElementById('board').value;
+        const classLevel = document.getElementById('classLevel').value;
+        const subject = document.getElementById('subject').value;
+        const sel = document.getElementById('chapter');
+        sel.innerHTML = '<option value="">Select Chapter</option>';
+        if (!subject) return;
+        const res = await fetch(\`\${API_BASE}/academic/chapters?board=\${board}&classLevel=\${classLevel}&subject=\${subject}\`, { headers });
+        const data = await res.json();
+        if (data.chapters) {
+            data.chapters.forEach(c => sel.innerHTML += \`<option value="\${c}">\${c}</option>\`);
+        }
+    }
+
+    async function loadTopics() {
+        const board = document.getElementById('board').value;
+        const classLevel = document.getElementById('classLevel').value;
+        const subject = document.getElementById('subject').value;
+        const chapter = document.getElementById('chapter').value;
+        const sel = document.getElementById('topic');
+        sel.innerHTML = '<option value="">Select Topic</option>';
+        if (!chapter) return;
+        const res = await fetch(\`\${API_BASE}/academic/topics?board=\${board}&classLevel=\${classLevel}&subject=\${subject}&chapter=\${chapter}\`, { headers });
+        const data = await res.json();
+        if (data.topics) {
+            data.topics.forEach(t => sel.innerHTML += \`<option value="\${t}">\${t}</option>\`);
+        }
+    }
+
+    function promptNew(selectId, name) {
+        const val = prompt(\`Enter new \${name}:\`);
+        if (val) {
+            const sel = document.getElementById(selectId);
+            sel.innerHTML += \`<option value="\${val}" selected>\${val}</option>\`;
+            // Trigger next load
+            if (selectId === 'board') loadClasses();
+            if (selectId === 'classLevel') loadSubjects();
+            if (selectId === 'subject') loadChapters();
+            if (selectId === 'chapter') loadTopics();
+        }
+    }
+
+    // Image upload handling
+    document.getElementById("questionImage").onchange = e => {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById("previewImage").src = URL.createObjectURL(file);
+            document.getElementById("previewImage").style.display = "block";
+            document.getElementById("fileLabel").style.display = "none";
+        }
+    };
+
+    const convertToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    };
+
+    function updateLivePreview() {
+        const qText = document.getElementById('qText').value;
+        const expText = document.getElementById('explanation').value;
+        const renderArea = document.getElementById('renderArea');
+        const solutionArea = document.getElementById('solutionArea');
+        const wrap = (t) => (t.includes('\\\\') && !t.includes('$')) ? \`$$\${t}$$\` : t;
+        
+        renderArea.innerHTML = qText ? wrap(qText) : '<p style="opacity: 0.2;">Awaiting input...</p>';
+        solutionArea.innerHTML = expText ? wrap(expText) : '<p style="opacity: 0.3;">Derivation preview...</p>';
+        
+        if (window.MathJax) { MathJax.typesetPromise([renderArea, solutionArea]); }
+    }
+
+    document.getElementById("qForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById("saveBtn");
+        const fileInput = document.getElementById("questionImage");
+        let imageBase64 = null;
+
+        const options = [
+            { label: 'A', text: document.getElementById('optA').value, isCorrect: document.getElementById('checkA').checked },
+            { label: 'B', text: document.getElementById('optB').value, isCorrect: document.getElementById('checkB').checked },
+            { label: 'C', text: document.getElementById('optC').value, isCorrect: document.getElementById('checkC').checked },
+            { label: 'D', text: document.getElementById('optD').value, isCorrect: document.getElementById('checkD').checked }
+        ];
+
+        if (options.filter(o => o.isCorrect).length === 0) {
+            return alert("Select at least 1 correct option!");
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = 'SYNCING...';
+
+        try {
+            if (fileInput.files[0]) imageBase64 = await convertToBase64(fileInput.files[0]);
+
+            const payload = {
+                board: document.getElementById('board').value,
+                classLevel: document.getElementById('classLevel').value,
+                subject: document.getElementById('subject').value,
+                chapter: document.getElementById('chapter').value,
+                topic: document.getElementById('topic').value,
+                questionText: document.getElementById("qText").value,
+                options: options,
+                difficulty: document.getElementById("difficulty").value,
+                avgSolveTime: document.getElementById("avgSolveTime").value,
+                marks: document.getElementById("marks").value,
+                negativeMarks: document.getElementById("negativeMarks").value,
+                solution: document.getElementById("explanation").value,
+                source: document.getElementById("source").value,
+                scope: 'institute', // forced
+                imageBase64: imageBase64
+            };
+
+            const res = await fetch(API_BASE + '/questions', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert("✅ Unit Synced to Institute Bank.");
+                e.target.reset();
+                document.getElementById("previewImage").style.display = "none";
+                document.getElementById("fileLabel").style.display = "block";
+                updateLivePreview();
+            } else {
+                alert("Sync Error: " + data.message);
+            }
+        } catch (err) { 
+            alert("Uplink Failure."); 
+            console.error(err);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = "SYNC TO BANK";
+        }
+    };
+
+    // Initialize
+    loadBoards();
+</script>
+</body>
+</html>

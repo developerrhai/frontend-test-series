@@ -148,8 +148,10 @@
             container.innerHTML = (data.exams || []).map(t => `
                 <div class="item-row">
                     <div class="item-info"><h5>${t.title}</h5><p>${t.duration} MINUTES</p></div>
-                    <button class="action-btn" onclick="window.location.href='exam.html?id=${t.id}'">Start</button>
-                    <button class="action-btn" onclick="startPracticeExam('${t.id}')">Start</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="action-btn" onclick="startPracticeExam('${t.id}', 'exam')">Mock Test</button>
+                        <button class="action-btn" style="background:var(--cyber-cyan); color:var(--midnight);" onclick="startPracticeExam('${t.id}', 'practice')">Practice</button>
+                    </div>
                 </div>
             `).join('') || '<p class="empty-msg">NO_PRACTICE_SETS</p>';
         } 
@@ -165,8 +167,10 @@
             container.innerHTML = (data.chapters || []).map(c => `
                 <div class="item-row">
                     <div class="item-info"><h5>${c.chapter_name}</h5><p>${c.subject.toUpperCase()}</p></div>
-                    <button class="action-btn" onclick="window.location.href='exam-permission.html?chapterId=${c.id}'">Enter</button>
-                    <button class="action-btn" onclick="startChapterExam('${c.id}')">Enter</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="action-btn" onclick="startChapterExam('${c.id}', 'exam')">Mock Test</button>
+                        <button class="action-btn" style="background:var(--cyber-cyan); color:var(--midnight);" onclick="startChapterExam('${c.id}', 'practice')">Practice</button>
+                    </div>
                 </div>
             `).join('') || '<p class="empty-msg">NO_CHAPTER_MODULES</p>';
         }
@@ -174,27 +178,7 @@
 
     window.onload = () => loadRepository('JEE Main', document.getElementById('defaultBtn'));
 
-async function startChapterExam(id) {
-    const token = localStorage.getItem("token");
-
-    try {
-        const res = await fetch(`/api/student/get-chapter-exam/${id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            localStorage.setItem("currentExam", JSON.stringify(data.exam));
-            window.location.href = `exam-permission.html?chapterId=${id}`;
-        } else {
-            alert(data.message);
-        }
-    } catch (err) {
-        alert("Error loading chapter exam");
-    }
-}
-async function startPracticeExam(id) {
+async function startPracticeExam(id, mode = 'exam') {
     const token = localStorage.getItem("token");
     const btn = event.target;
 
@@ -212,11 +196,12 @@ async function startPracticeExam(id) {
         const data = await res.json();
 
         if (data.success) {
-            // 🔥 MOST IMPORTANT STEP
             localStorage.setItem("currentExam", JSON.stringify(data.test || data.exam));
-
-            // redirect properly
-            window.location.href = `exam-permission.html?id=${id}`;
+            if (mode === 'practice') {
+                window.location.href = 'practice.html';
+            } else {
+                window.location.href = `exam-permission.html?id=${id}`;
+            }
         } else {
             alert(data.message || "Access denied");
             btn.innerText = originalText;
@@ -231,8 +216,13 @@ async function startPracticeExam(id) {
     }
 }
 
-async function startChapterExam(id) {
+async function startChapterExam(id, mode = 'exam') {
     const token = localStorage.getItem("token");
+    const btn = event.target;
+    
+    const originalText = btn.innerText;
+    btn.innerText = "Loading...";
+    btn.disabled = true;
 
     try {
         const res = await fetch(`/api/student/get-chapter-exam/${id}`, {
@@ -243,12 +233,20 @@ async function startChapterExam(id) {
 
         if (data.success) {
             localStorage.setItem("currentExam", JSON.stringify(data.exam));
-            window.location.href = `exam-permission.html?chapterId=${id}`;
+            if (mode === 'practice') {
+                window.location.href = 'practice.html';
+            } else {
+                window.location.href = `exam-permission.html?chapterId=${id}`;
+            }
         } else {
             alert(data.message);
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
     } catch (err) {
         alert("Error loading chapter exam");
+        btn.innerText = originalText;
+        btn.disabled = false;
     }
 }
 </script>
