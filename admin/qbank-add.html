@@ -234,7 +234,7 @@
     const API_BASE = window.location.origin + '/api/qbank';
     const token = localStorage.getItem("adminToken"); // Using adminToken
 
-    if (!token) window.location.href = "login.html";
+    if (!token) window.location.href = "../login.html";
 
     const headers = {
         'Content-Type': 'application/json',
