@@ -238,17 +238,17 @@
 
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': \`Bearer \${token}\`
+        'Authorization': `Bearer ${token}`
     };
 
     // Load structure
     async function loadBoards() {
-        const res = await fetch(\`\${API_BASE}/academic/boards\`, { headers });
+        const res = await fetch(`${API_BASE}/academic/boards`, { headers });
         const data = await res.json();
         const sel = document.getElementById('board');
         sel.innerHTML = '<option value="">Select Board</option>';
         if (data.boards) {
-            data.boards.forEach(b => sel.innerHTML += \`<option value="\${b}">\${b}</option>\`);
+            data.boards.forEach(b => sel.innerHTML += `<option value="${b}">${b}</option>`);
         }
     }
 
@@ -257,10 +257,10 @@
         const sel = document.getElementById('classLevel');
         sel.innerHTML = '<option value="">Select Class</option>';
         if (!board) return;
-        const res = await fetch(\`\${API_BASE}/academic/classes?board=\${board}\`, { headers });
+        const res = await fetch(`${API_BASE}/academic/classes?board=${board}`, { headers });
         const data = await res.json();
         if (data.classes) {
-            data.classes.forEach(c => sel.innerHTML += \`<option value="\${c}">\${c}</option>\`);
+            data.classes.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
         }
     }
 
@@ -270,10 +270,10 @@
         const sel = document.getElementById('subject');
         sel.innerHTML = '<option value="">Select Subject</option>';
         if (!classLevel) return;
-        const res = await fetch(\`\${API_BASE}/academic/subjects?board=\${board}&classLevel=\${classLevel}\`, { headers });
+        const res = await fetch(`${API_BASE}/academic/subjects?board=${board}&classLevel=${classLevel}`, { headers });
         const data = await res.json();
         if (data.subjects) {
-            data.subjects.forEach(s => sel.innerHTML += \`<option value="\${s}">\${s}</option>\`);
+            data.subjects.forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
         }
     }
 
@@ -284,10 +284,10 @@
         const sel = document.getElementById('chapter');
         sel.innerHTML = '<option value="">Select Chapter</option>';
         if (!subject) return;
-        const res = await fetch(\`\${API_BASE}/academic/chapters?board=\${board}&classLevel=\${classLevel}&subject=\${subject}\`, { headers });
+        const res = await fetch(`${API_BASE}/academic/chapters?board=${board}&classLevel=${classLevel}&subject=${subject}`, { headers });
         const data = await res.json();
         if (data.chapters) {
-            data.chapters.forEach(c => sel.innerHTML += \`<option value="\${c}">\${c}</option>\`);
+            data.chapters.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
         }
     }
 
@@ -299,18 +299,18 @@
         const sel = document.getElementById('topic');
         sel.innerHTML = '<option value="">Select Topic</option>';
         if (!chapter) return;
-        const res = await fetch(\`\${API_BASE}/academic/topics?board=\${board}&classLevel=\${classLevel}&subject=\${subject}&chapter=\${chapter}\`, { headers });
+        const res = await fetch(`${API_BASE}/academic/topics?board=${board}&classLevel=${classLevel}&subject=${subject}&chapter=${chapter}`, { headers });
         const data = await res.json();
         if (data.topics) {
-            data.topics.forEach(t => sel.innerHTML += \`<option value="\${t}">\${t}</option>\`);
+            data.topics.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
         }
     }
 
     function promptNew(selectId, name) {
-        const val = prompt(\`Enter new \${name}:\`);
+        const val = prompt(`Enter new ${name}:`);
         if (val) {
             const sel = document.getElementById(selectId);
-            sel.innerHTML += \`<option value="\${val}" selected>\${val}</option>\`;
+            sel.innerHTML += `<option value="${val}" selected>${val}</option>`;
             // Trigger next load
             if (selectId === 'board') loadClasses();
             if (selectId === 'classLevel') loadSubjects();
@@ -343,7 +343,7 @@
         const expText = document.getElementById('explanation').value;
         const renderArea = document.getElementById('renderArea');
         const solutionArea = document.getElementById('solutionArea');
-        const wrap = (t) => (t.includes('\\\\') && !t.includes('$')) ? \`$$\${t}$$\` : t;
+        const wrap = (t) => (t.includes('\\\\') && !t.includes('$')) ? `$$${t}$$` : t;
         
         renderArea.innerHTML = qText ? wrap(qText) : '<p style="opacity: 0.2;">Awaiting input...</p>';
         solutionArea.innerHTML = expText ? wrap(expText) : '<p style="opacity: 0.3;">Derivation preview...</p>';
