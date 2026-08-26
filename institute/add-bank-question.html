@@ -176,7 +176,7 @@
     const chapterId = params.get("chapterId");
     const chapterName = params.get("name");
 
-    if (!token) window.location.href = "login.html";
+    if (!token) window.location.href = "../login.html";
     document.getElementById("chapDisplay").innerText = "Syncing: " + (chapterName || "Unassigned");
 
     function handleModeChange() {

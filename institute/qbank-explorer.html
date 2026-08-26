@@ -129,7 +129,7 @@
     const API_BASE = window.location.origin + '/api/qbank';
     const token = localStorage.getItem("token"); // Institute token
 
-    if (!token) window.location.href = "login.html";
+    if (!token) window.location.href = "../login.html";
 
     const headers = { 'Authorization': \`Bearer \${token}\` };
 

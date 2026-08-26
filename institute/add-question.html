@@ -151,7 +151,7 @@
     const token = localStorage.getItem("token");
     const examId = new URLSearchParams(location.search).get("id");
 
-    if (!token) window.location.href = "login.html";
+    if (!token) window.location.href = "../login.html";
     if (!examId) window.location.href = "my-tests.html";
     document.getElementById("displayExamId").innerText = examId;
 
